@@ -1,19 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/primary_blue"
+    android:orientation="vertical"
+    android:paddingVertical="@dimen/indent_middle"
+    android:paddingBottom="@dimen/indent_big"
     tools:context=".MainActivity">
 
     <TextView
+        android:id="@+id/title_TV"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_marginStart="@dimen/indent_middle"
+        android:layout_marginEnd="@dimen/indent_middle"
+        android:fontFamily="@font/yandexsans"
+        android:paddingTop="@dimen/indent_middle"
+        android:paddingBottom="36dp"
+        android:text="@string/playlist_maker"
+        android:textColor="@color/white"
+        android:textFontWeight="400"
+        android:textSize="26sp" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <Button
+        android:id="@+id/search_BTN"
+        style="@style/ButtonBig"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginStart="@dimen/indent_middle"
+        android:layout_marginEnd="@dimen/indent_middle"
+        android:layout_weight="1"
+        android:text="@string/search"
+        app:icon="@drawable/search_ico" />
+
+    <Button
+        android:id="@+id/media_BTN"
+        style="@style/ButtonBig"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginStart="@dimen/indent_middle"
+        android:layout_marginTop="@dimen/indent_small"
+        android:layout_marginEnd="@dimen/indent_middle"
+        android:layout_weight="1"
+        android:text="@string/media"
+        app:icon="@drawable/media_ico" />
+
+    <Button
+        android:id="@+id/settings_BTN"
+        style="@style/ButtonBig"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginStart="@dimen/indent_middle"
+        android:layout_marginEnd="@dimen/indent_middle"
+        android:layout_weight="1"
+        android:text="@string/settings"
+        app:icon="@drawable/settings_ico" />
+
+</LinearLayout>
