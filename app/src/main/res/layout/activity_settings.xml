@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -45,9 +46,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:fontFamily="@font/yandexsans"
-            android:paddingVertical="21dp"
-            android:paddingStart="@dimen/indent_middle"
-            android:paddingEnd="@dimen/indent_middle"
+            android:paddingVertical="22dp"
+            android:paddingHorizontal="@dimen/indent_middle"
             android:text="@string/night_mode"
             android:textColor="@color/dark_gey"
             android:textFontWeight="400"
@@ -73,9 +73,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:fontFamily="@font/yandexsans"
-            android:paddingVertical="21dp"
-            android:paddingStart="@dimen/indent_middle"
-            android:paddingEnd="@dimen/indent_middle"
+            android:paddingVertical="22dp"
+            android:paddingHorizontal="@dimen/indent_middle"
             android:text="@string/share_app"
             android:textColor="@color/dark_gey"
             android:textFontWeight="400"
@@ -86,8 +85,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             style="@style/ClickableIcon"
-            android:paddingStart="@dimen/indent_middle"
-            android:paddingEnd="@dimen/indent_middle"
+            android:paddingHorizontal="@dimen/indent_middle"
             android:src="@drawable/share_ico" />
     </LinearLayout>
 
@@ -101,9 +99,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:fontFamily="@font/yandexsans"
-            android:paddingVertical="21dp"
-            android:paddingStart="@dimen/indent_middle"
-            android:paddingEnd="@dimen/indent_middle"
+            android:paddingVertical="22dp"
+            android:paddingHorizontal="@dimen/indent_middle"
             android:text="@string/write_in_support"
             android:textColor="@color/dark_gey"
             android:textFontWeight="400"
@@ -114,8 +111,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             style="@style/ClickableIcon"
-            android:paddingStart="@dimen/indent_middle"
-            android:paddingEnd="@dimen/indent_middle"
+            android:paddingHorizontal="@dimen/indent_middle"
             android:src="@drawable/support_ico" />
 
     </LinearLayout>
@@ -130,9 +126,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:fontFamily="@font/yandexsans"
-            android:paddingVertical="21dp"
-            android:paddingStart="@dimen/indent_middle"
-            android:paddingEnd="@dimen/indent_middle"
+            android:paddingVertical="22dp"
+            android:paddingHorizontal="@dimen/indent_middle"
             android:text="@string/user_agreement"
             android:textColor="@color/dark_gey"
             android:textFontWeight="400"
@@ -143,8 +138,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             style="@style/ClickableIcon"
-            android:paddingStart="@dimen/indent_middle"
-            android:paddingEnd="@dimen/indent_middle"
+            android:paddingHorizontal="@dimen/indent_middle"
             android:src="@drawable/forwardarrow_ico" />
     </LinearLayout>
 
