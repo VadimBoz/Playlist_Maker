@@ -23,7 +23,7 @@
         android:layout_height="wrap_content"
         android:minHeight="61dp"
         android:layout_marginVertical="@dimen/indent_extra_small"
-        style="@style/ButtonSettings"
+        style="@style/TextButtonSettings"
         android:text="@string/night_mode"
         android:checked="false" />
 
@@ -31,7 +31,7 @@
         android:id="@+id/shareUp_BTN"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        style="@style/ButtonSettings"
+        style="@style/TextButtonSettings"
         android:text="@string/share_app"
         android:drawableEnd="@drawable/share_ico"/>
 
@@ -39,7 +39,7 @@
         android:id="@+id/support_BTN"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        style="@style/ButtonSettings"
+        style="@style/TextButtonSettings"
         android:text="@string/write_in_support"
         android:drawableEnd="@drawable/support_ico" />
 
@@ -47,7 +47,7 @@
         android:id="@+id/userAgreement_BTN"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        style="@style/ButtonSettings"
+        style="@style/TextButtonSettings"
         android:text="@string/user_agreement"
         android:drawableEnd="@drawable/forward_arrow_ico" />
 

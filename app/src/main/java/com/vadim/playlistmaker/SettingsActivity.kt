@@ -42,7 +42,7 @@ class SettingsActivity : AppCompatActivity() {
         shareUpBTN.setOnClickListener {
             val sendIntent = Intent(Intent.ACTION_SEND).apply {
                 type = "text/plain"
-                putExtra(Intent.EXTRA_TEXT, "https://practicum.yandex.ru/android-developer/")
+                putExtra(Intent.EXTRA_TEXT, getString(R.string.course_android_developer))
             }
             startActivity(sendIntent)
 

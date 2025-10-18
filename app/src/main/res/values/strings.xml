@@ -16,6 +16,7 @@
     <string name="email">vadim3@mail.ru</string>
     <string name="error_mail">Невозможно открыть приложение для отправки письма</string>
     <string name="uri_user_agreement">https://yandex.ru/legal/practicum_offer/</string>
+    <string name="course_android_developer">https://practicum.yandex.ru/android-developer/</string>
     <string name="error_user_agreement">Браузер не найден</string>
     <string name="empty_stroke"></string>
 </resources>

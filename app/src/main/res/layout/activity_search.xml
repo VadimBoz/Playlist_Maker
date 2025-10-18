@@ -9,7 +9,6 @@
     android:background="@color/colorSecondary"
     tools:context=".SettingsActivity">
 
-
     <TextView
         android:id="@+id/toolBar_BTN"
         android:layout_width="match_parent"
@@ -19,17 +18,36 @@
         android:layout_marginBottom="0dp"
         app:drawableStartCompat="@drawable/arrow_left_alt_24" />
 
-
-    <EditText
-        android:id="@+id/searchEditText"
-        style="@style/searchEditText"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:drawableStart="@drawable/search_ico"
-        android:drawableEnd="@drawable/clear_ico"
-        tools:ignore="Autofill"
-        />
+        android:layout_marginHorizontal="@dimen/indent_middle"
+        android:layout_marginVertical="@dimen/indent_small"
+        android:paddingStart="@dimen/indent_middle_compact"
+        android:paddingEnd="@dimen/indent_middle_compact"
+        android:background="@drawable/search_background">
 
+
+        <EditText
+            android:id="@+id/searchEditText"
+            style="@style/searchEditText"
+            android:layout_marginEnd="@dimen/indent_big"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:drawableStart="@drawable/search_ico" />
+
+        <ImageView
+            android:id="@+id/clear_BTN"
+            android:layout_width="@dimen/icon_size_small"
+            android:layout_height="@dimen/icon_size_small"
+            android:layout_gravity="end|center_vertical"
+            app:tint="@color/search_icon_tint"
+            android:scaleType="centerInside"
+            android:src="@drawable/clear_ico"
+            android:visibility="invisible"
+            tools:visibility="visible"
+            />
+    </FrameLayout>
 
 
 
