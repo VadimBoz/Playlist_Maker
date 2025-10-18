@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+    <color name="background_main">@color/grey_dark</color>
+    <color name="background_second">@color/grey_dark</color>
+
+    <color name="colorPrimary">@color/grey_dark</color>
+    <color name="colorSecondary">@color/grey_dark</color>
+
+    <color name="colorOnPrimary">@color/white</color>
+
+    <color name="colorOnSecondary">@color/white</color>
+    <color name="colorOnSecondaryVariant">@color/white</color>
+
+
+    <color name="search_background">@color/white</color>
+    <color name="search_edit_text">@color/grey_dark</color>
+    <color name="search_hint_text">@color/grey_dark</color>
+    <color name="search_icon_tint">@color/grey_dark</color>
+</resources>

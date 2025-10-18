@@ -6,66 +6,49 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="@color/colorSecondary"
     tools:context=".SettingsActivity">
 
-    <LinearLayout
+    <TextView
+        android:id="@+id/toolBar_BTN"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="24dp"
-        android:background="@color/white"
-        android:orientation="horizontal">
-
-        <ImageView
-            android:id="@+id/back_BTN"
-            style="@style/ClickableIcon"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_margin="12dp"
-            android:src="@drawable/arrow_left_alt_24"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:fontFamily="@font/yandexsans"
-            android:padding="12dp"
-            android:text="@string/settings"
-            android:textColor="@color/dark_gey"
-            android:textFontWeight="500"
-            android:textSize="22sp" />
-    </LinearLayout>
+        android:text="@string/settings"
+        style="@style/ToolbarTitle"
+        android:drawableStart="@drawable/arrow_left_alt_24" />
 
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/switch_BTN"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:minHeight="61dp"
+        android:layout_marginVertical="@dimen/indent_extra_small"
         style="@style/ButtonSettings"
-        android:background="@color/white"
         android:text="@string/night_mode"
-        android:checked="true" />
+        android:checked="false" />
 
-    <Button
+    <TextView
         android:id="@+id/shareUp_BTN"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         style="@style/ButtonSettings"
-        android:text="@string/write_in_support"
-        app:icon="@drawable/share_ico" />
+        android:text="@string/share_app"
+        android:drawableEnd="@drawable/share_ico"/>
 
-    <Button
+    <TextView
         android:id="@+id/support_BTN"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         style="@style/ButtonSettings"
         android:text="@string/write_in_support"
-        app:icon="@drawable/support_ico" />
+        android:drawableEnd="@drawable/support_ico" />
 
-    <Button
+    <TextView
         android:id="@+id/userAgreement_BTN"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         style="@style/ButtonSettings"
         android:text="@string/user_agreement"
-        app:icon="@drawable/forwardarrow_ico" />
+        android:drawableEnd="@drawable/forward_arrow_ico" />
 
 </LinearLayout>

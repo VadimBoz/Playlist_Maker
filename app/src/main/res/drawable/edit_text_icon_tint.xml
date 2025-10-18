@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Указываем цвет для всех состояний.
+         android:alpha="1.0" заставляет цвет быть полностью непрозрачным. -->
+    <item
+        android:color="@color/search_edit_text"
+        android:alpha="1.0"/>
+</selector>

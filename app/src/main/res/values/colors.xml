@@ -1,10 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="grey">#AEAFB4</color>
-    <color name="grey_light">#92929E</color>
-    <color name="white">#FFFFFFFF</color>
-    <color name="primary_blue">#3772E7</color>
-    <color name="black">#000000</color>
-    <color name="dark_gey">#1A1B22</color>
+    <color name="white">#FFFFFF</color>
+    <color name="grey_very_light">#E6E8EB</color>
+    <color name="grey_light">#AEAFB4</color>
+    <color name="grey">#39393E</color>
+    <color name="grey_dark">#1A1B22</color>
+    <color name="pure_black">#000000</color>
+    <color name="blue">#3772E7</color>
+    <color name="switch_activated">#3772E7</color>
+
+
+    <color name="background_main">@color/blue</color>
+    <color name="background_second">@color/white</color>
+
+    <color name="colorPrimary">@color/white</color>
+    <color name="colorSecondary">@color/white</color>
+
+    <color name="colorOnPrimary">@color/pure_black</color>
+    <color name="colorOnSecondary">@color/pure_black</color>
+
+    <color name="colorOnSecondaryVariant">@color/grey_light</color>
+
+    <color name="search_background">@color/grey_very_light</color>
+    <color name="search_edit_text">@color/grey_dark</color>
+    <color name="search_hint_text">@color/grey_light</color>
+    <color name="search_icon_tint">@color/grey_light</color>
+
 </resources>
 

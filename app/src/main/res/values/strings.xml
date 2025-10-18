@@ -11,4 +11,11 @@
     <string name="write_in_support">Написать в подержку</string>
     <string name="media_activity">Media Activity</string>
     <string name="search_activity">Search Activity</string>
+    <string name="subject_mail">Сообщение разработчикам и разработчицам приложения Playlist Maker</string>
+    <string name="text_mail">Спасибо разработчикам и разработчицам за крутое приложение!</string>"
+    <string name="email">vadim3@mail.ru</string>
+    <string name="error_mail">Невозможно открыть приложение для отправки письма</string>
+    <string name="uri_user_agreement">https://yandex.ru/legal/practicum_offer/</string>
+    <string name="error_user_agreement">Браузер не найден</string>
+    <string name="empty_stroke"></string>
 </resources>
