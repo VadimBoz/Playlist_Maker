@@ -9,6 +9,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.switchmaterial.SwitchMaterial
 
 class SettingsActivity : AppCompatActivity() {
@@ -23,8 +24,8 @@ class SettingsActivity : AppCompatActivity() {
             insets
         }
 
-        val backBTN = findViewById<TextView>(R.id.toolBar_BTN)
-        backBTN.setOnClickListener {
+        val backBTN = findViewById<MaterialToolbar>(R.id.toolBarBack_BTN)
+        backBTN.setNavigationOnClickListener {
             finish()
         }
 

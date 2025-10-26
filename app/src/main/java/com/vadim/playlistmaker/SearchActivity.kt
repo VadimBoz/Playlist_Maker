@@ -12,6 +12,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.google.android.material.appbar.MaterialToolbar
 
 class SearchActivity : AppCompatActivity() {
 
@@ -34,8 +35,8 @@ class SearchActivity : AppCompatActivity() {
             insets
         }
 
-        val toolBarBTN = findViewById<TextView>(R.id.toolBar_BTN)
-        toolBarBTN.setOnClickListener {
+        val toolBarBTN = findViewById<MaterialToolbar>(R.id.toolBarBack_BTN)
+        toolBarBTN.setNavigationOnClickListener {
             finish()
         }
 
