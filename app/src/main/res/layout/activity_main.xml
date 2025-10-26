@@ -3,14 +3,11 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/primary_blue"
+    android:background="@color/background_main"
     android:orientation="vertical"
-    android:paddingVertical="@dimen/indent_middle"
-    android:paddingBottom="@dimen/indent_big"
     tools:context=".MainActivity">
 
     <TextView
@@ -19,7 +16,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/indent_middle"
         android:layout_marginEnd="@dimen/indent_middle"
-        android:fontFamily="@font/yandexsans"
+        android:fontFamily="@font/yandex_sans"
         android:paddingTop="@dimen/indent_middle"
         android:paddingBottom="36dp"
         android:text="@string/playlist_maker"
@@ -32,7 +29,6 @@
         style="@style/ButtonBig"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginHorizontal="@dimen/indent_middle"
         android:layout_weight="1"
         android:text="@string/search"
         app:icon="@drawable/search_ico" />
@@ -42,7 +38,6 @@
         style="@style/ButtonBig"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginHorizontal="@dimen/indent_middle"
         android:layout_weight="1"
         android:text="@string/media"
         app:icon="@drawable/media_ico" />
@@ -52,7 +47,6 @@
         style="@style/ButtonBig"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginHorizontal="@dimen/indent_middle"
         android:layout_weight="1"
         android:text="@string/settings"
         app:icon="@drawable/settings_ico" />

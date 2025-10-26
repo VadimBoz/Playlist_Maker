@@ -1,20 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".SearchActivity">
+    android:orientation="vertical"
+    android:background="@color/colorSecondary"
+    tools:context=".SettingsActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolBarBack_BTN"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/search_activity"
-        android:textSize="30dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:titleTextAppearance="@style/ToolBarTextAppearance"
+        app:title="@string/search"
+        app:navigationIcon="@drawable/arrow_left_alt_24" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/indent_middle"
+        android:layout_marginVertical="@dimen/indent_small"
+        android:paddingStart="@dimen/indent_middle_compact"
+        android:paddingEnd="@dimen/indent_middle_compact"
+        android:background="@drawable/search_background">
+
+
+        <EditText
+            android:id="@+id/searchEditText"
+            style="@style/searchEditText"
+            android:layout_marginEnd="@dimen/indent_big"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:drawableStart="@drawable/search_ico" />
+
+        <ImageView
+            android:id="@+id/clear_BTN"
+            android:layout_width="@dimen/icon_size_small"
+            android:layout_height="@dimen/icon_size_small"
+            android:layout_gravity="end|center_vertical"
+            app:tint="@color/search_icon_tint"
+            android:scaleType="centerInside"
+            android:src="@drawable/clear_ico"
+            android:visibility="invisible"
+            tools:visibility="visible"
+            />
+    </FrameLayout>
+
+
+
+</LinearLayout>

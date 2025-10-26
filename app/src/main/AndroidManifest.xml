@@ -13,6 +13,7 @@
         android:theme="@style/Theme.PlaylistMaker">
         <activity
             android:name=".SearchActivity"
+            android:windowSoftInputMode="stateVisible|adjustResize"
             android:exported="false" />
         <activity
             android:name=".MediaActivity"
