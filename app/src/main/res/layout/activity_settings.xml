@@ -9,13 +9,16 @@
     android:background="@color/colorSecondary"
     tools:context=".SettingsActivity">
 
-    <TextView
-        android:id="@+id/toolBar_BTN"
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolBarBack_BTN"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/settings"
-        style="@style/ToolbarTitle"
-        android:drawableStart="@drawable/arrow_left_alt_24" />
+        app:titleTextAppearance="@style/ToolBarTextAppearance"
+        app:title="@string/settings"
+        app:navigationIcon="@drawable/arrow_left_alt_24" />
+
+
 
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/switch_BTN"

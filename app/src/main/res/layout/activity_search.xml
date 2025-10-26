@@ -9,14 +9,15 @@
     android:background="@color/colorSecondary"
     tools:context=".SettingsActivity">
 
-    <TextView
-        android:id="@+id/toolBar_BTN"
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolBarBack_BTN"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/search"
-        style="@style/ToolbarTitle"
-        android:layout_marginBottom="0dp"
-        app:drawableStartCompat="@drawable/arrow_left_alt_24" />
+        app:titleTextAppearance="@style/ToolBarTextAppearance"
+        app:title="@string/search"
+        app:navigationIcon="@drawable/arrow_left_alt_24" />
+
 
     <FrameLayout
         android:layout_width="match_parent"
