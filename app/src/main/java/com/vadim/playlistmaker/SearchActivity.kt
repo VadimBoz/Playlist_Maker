@@ -4,14 +4,15 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.ImageView
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.appbar.MaterialToolbar
 
 class SearchActivity : AppCompatActivity() {
@@ -40,8 +41,6 @@ class SearchActivity : AppCompatActivity() {
             finish()
         }
 
-
-
         searchEditText = findViewById(R.id.searchEditText)
         clearBTN = findViewById<ImageView>(R.id.clear_BTN)
         searchEditText.addTextChangedListener(createSearchTextWatcher())
@@ -51,26 +50,42 @@ class SearchActivity : AppCompatActivity() {
             searchEditText.setText("")
             searchText = ""
             clearBTN.updateVisibility("")
+            hideKeyboard()
         }
 
         searchEditText.setOnClickListener {
             Toast.makeText(this, "Search text - $searchText", Toast.LENGTH_SHORT).show()
         }
+
+        val trackListRecyclerView = findViewById<RecyclerView>(R.id.trackList_RV)
+        val trackAdapter = TrackAdapter(getTrackList())
+        trackListRecyclerView.adapter = trackAdapter
+        trackListRecyclerView.addOnScrollListener(
+            object : RecyclerView.OnScrollListener() {
+                override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                    super.onScrollStateChanged(recyclerView, newState)
+                    if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
+                        hideKeyboard()
+                    }
+                }
+            }
+        )
     }
 
     private fun createSearchTextWatcher(): TextWatcher {
         return object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
             }
+
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
             }
+
             override fun afterTextChanged(s: Editable?) {
                 searchText = s.toString()
                 clearBTN.updateVisibility(searchText)
             }
         }
     }
-
 
     private fun ImageView.updateVisibility(text: CharSequence?) {
         visibility = if (text.isNullOrEmpty()) {
@@ -95,7 +110,12 @@ class SearchActivity : AppCompatActivity() {
         }
     }
 
-
+    private fun hideKeyboard() {
+        val inputMethodManager = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+        val view = currentFocus ?: View(this)
+        inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
+        view.clearFocus()
+    }
 
 }
 

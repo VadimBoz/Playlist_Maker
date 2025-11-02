@@ -1,0 +1,13 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="13dp"
+    android:height="13dp"
+    android:viewportWidth="13"
+    android:viewportHeight="13"
+    android:tint="#AEAFB4">
+
+    <!-- Кружок диаметром 3dp в центре 13x13 контейнера -->
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M6.5,5a1.5,1.5 0,1 1,0 3a1.5,1.5 0,1 1,0 -3z"/>
+
+</vector>
