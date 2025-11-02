@@ -8,6 +8,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
@@ -29,8 +30,9 @@ class TrackAdapter(val tracks: List<Track>) : RecyclerView.Adapter<TrackViewHold
 
 class TrackViewHolder(parent: ViewGroup)
     : RecyclerView.ViewHolder(
-    LayoutInflater.from(parent.context)
-        .inflate(R.layout.item_track, parent, false)) {
+        LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_track, parent, false)) {
+
     private val artWorkIv = itemView.findViewById<ImageView>(R.id.artWork_IV)
     private val nameTrackTv = itemView.findViewById<TextView>(R.id.name_Track_TV)
     private val artistNameTv = itemView.findViewById<TextView>(R.id.artistName_TV)
@@ -43,29 +45,7 @@ class TrackViewHolder(parent: ViewGroup)
 
         Glide.with(itemView)
             .load(track.artworkUrl100)
-            .listener(object : RequestListener<Drawable> {
-                override fun onLoadFailed(
-                    e: GlideException?,
-                    model: Any?,
-                    target: Target<Drawable>?,
-                    isFirstResource: Boolean
-                ): Boolean {
-                    Log.e("GlideDebug", "Image load failed", e)
-                    return false
-                }
-
-                override fun onResourceReady(
-                    resource: Drawable?,
-                    model: Any?,
-                    target: Target<Drawable>?,
-                    dataSource: com.bumptech.glide.load.DataSource?,
-                    isFirstResource: Boolean
-                ): Boolean {
-                    return false
-                }
-            })
             .placeholder(R.drawable.placeholder)
-            .error(R.drawable.cat_ico)
             .into(artWorkIv)
     }
 }

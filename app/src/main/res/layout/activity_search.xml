@@ -54,7 +54,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:paddingVertical="@dimen/indent_middle"
-        android:paddingHorizontal="@dimen/indent_middle_compact"
         tools:listitem="@layout/item_track"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>
 

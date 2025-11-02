@@ -8,9 +8,8 @@ data class Track(
 )
 
 
-fun getTrackList(): ArrayList<Track> {
-    return ArrayList(
-        listOf(
+fun getTrackList(): MutableList<Track> {
+    return mutableListOf(
             Track(
                 trackName = "Smells Like Teen Spirit==================================",
                 artistName = "Nirvana======================================",
@@ -107,7 +106,5 @@ fun getTrackList(): ArrayList<Track> {
                 trackTime = "0:00",
                 artworkUrl100 = "https:///.jpg"
             )
-
-        )
     )
 }
