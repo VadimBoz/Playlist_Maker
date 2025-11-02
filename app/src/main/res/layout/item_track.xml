@@ -14,7 +14,7 @@
         android:background="@drawable/rounded_rectangle_4"
         android:clipToOutline="true"
         android:scaleType="centerCrop"
-        tool:src="@drawable/cat_ico"
+        tool:src="@drawable/placeholder"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

@@ -23,10 +23,10 @@ class MediaActivity : AppCompatActivity() {
 
         val imageUrl = "https://img.freepik.com/free-vector/open-blue-book-white_1308-69339.jpg"
         val imageView = findViewById<ImageView>(R.id.image)
-        val density = applicationContext.resources.displayMetrics.density
+
         Glide.with(applicationContext)
             .load(imageUrl)
-            .transform(RoundedCorners((32 * density).roundToInt()))
+            .transform(RoundedCorners(dpToPx(16)))
             .into(imageView)
 
 
