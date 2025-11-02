@@ -23,13 +23,23 @@
         <item name="android:textAppearance">@style/TextAppearanceButtonBig</item>
     </style>
 
-    <style name="TextAppearanceButtonSettings" parent="TextAppearance.MaterialComponents.Body1">
+    <style name="TextAppearanceTitle3" parent="TextAppearance.MaterialComponents.Body1">
         <item name="android:textSize">16sp</item>
         <item name="android:fontFamily">@font/yandex_sans</item>
         <item name="android:textFontWeight">400</item>
         <item name="android:textAllCaps">false</item>
         <item name="android:letterSpacing">0</item>
     </style>
+
+    <style name="TextAppearanceBody" parent="TextAppearance.AppCompat.Body2">
+        <item name="android:textSize">11sp</item>
+        <item name="android:textColor">@color/colorOnSecondaryVariant</item>
+        <item name="android:fontFamily">@font/yandex_sans</item>
+        <item name="android:textFontWeight">400</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+
 
     <style name="TextButtonSettings" parent="Widget.MaterialComponents.TextView">
         <item name="android:paddingVertical">@dimen/indent_middle</item>
@@ -41,7 +51,7 @@
         <item name="android:focusable">true</item>
         <item name="android:clickable">true</item>
         <item name="rippleColor">@color/grey</item>
-        <item name="android:textAppearance">@style/TextAppearanceButtonSettings</item>
+        <item name="android:textAppearance">@style/TextAppearanceTitle3</item>
     </style>
 
 
@@ -65,20 +75,6 @@
     </style>
 
 
-    <style name="ToolbarTitle" parent="Widget.MaterialComponents.TextView">
-        <item name="android:fontFamily">@font/yandex_sans</item>
-        <item name="android:textFontWeight">500</item>
-        <item name="android:textColor">@color/colorOnSecondary</item>
-        <item name="android:letterSpacing">0</item>
-        <item name="android:textSize">22sp</item>
-        <item name="android:textStyle">normal</item>
-        <item name="android:background">@color/colorSecondary</item>
-        <item name="android:padding">@dimen/indent_middle</item>
-        <item name="android:layout_marginBottom">@dimen/indent_middle</item>
-        <item name="android:drawablePadding">@dimen/indent_big</item>
-        <item name="android:drawableTint">@color/colorOnSecondary</item>
-    </style>
-
     <style name="searchEditText" parent="Widget.AppCompat.EditText">
         <item name="backgroundTint">@color/grey_very_light</item>
         <item name="android:textColor">@color/search_edit_text</item>
@@ -95,4 +91,6 @@
         <item name="singleLine">true</item>
         <item name="android:drawablePadding">@dimen/indent_small</item>
     </style>
+
+
 </resources>
