@@ -17,4 +17,7 @@
     <color name="search_edit_text">@color/grey_dark</color>
     <color name="search_hint_text">@color/grey_dark</color>
     <color name="search_icon_tint">@color/grey_dark</color>
+    <color name="warning_text">@color/white</color>
+    <color name="surfacePrimary">@color/white</color>
+
 </resources>

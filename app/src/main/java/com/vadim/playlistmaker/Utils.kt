@@ -2,6 +2,8 @@ package com.vadim.playlistmaker
 
 import android.content.Context
 import android.util.TypedValue
+import java.text.SimpleDateFormat
+import java.util.Locale
 import kotlin.math.roundToInt
 
 fun <T: Number> Context.dpToPx(dp: T): Int {
@@ -10,4 +12,18 @@ fun <T: Number> Context.dpToPx(dp: T): Int {
         dp.toFloat(),
         this.resources.displayMetrics
     ).roundToInt()
+}
+
+fun String.cleanText(): String {
+    return this
+        .trim()
+        .replace("\\s+".toRegex(), " ")
+        .replace("[\\u0000-\\u001F\\u007F-\\u009F]".toRegex(), "")
+        .replace("[\\u2028\\u2029]".toRegex(), "")
+        .replace("\uFEFF".toRegex(), "")
+}
+    fun String?.epochTimeToTxt(): String {
+    return this?.let {
+        SimpleDateFormat("mm:ss", Locale.getDefault()).format(it.toLong())
+    } ?: ""
 }
