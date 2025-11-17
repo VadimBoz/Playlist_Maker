@@ -27,7 +27,6 @@ class SearchActivity : AppCompatActivity() {
 
     private lateinit var searchEditText: EditText
     private val KEY_SEARCH_TEXT = "search_text"
-    private val KEY_TRACK_LIST = "track_list"
     private var KEY_CURRENT_STATE = "current_UI_state"
     private lateinit var clearBTN: ImageView
     private val trackBaseUrl = "https://itunes.apple.com"
@@ -70,8 +69,7 @@ class SearchActivity : AppCompatActivity() {
 
         retrofit = Retrofit.Builder()
             .baseUrl(trackBaseUrl)
-            .addConverterFactory(
-                GsonConverterFactory.create(
+            .addConverterFactory(GsonConverterFactory.create(
                     GsonBuilder()
                         .registerTypeAdapter(Track::class.java, TrackDeserializerAdapter())
                         .create()
@@ -81,8 +79,7 @@ class SearchActivity : AppCompatActivity() {
 
         trackApiService = retrofit.create(TrackApiService::class.java)
 
-        searchEditText = findViewById(R.id.searchEditText)
-        clearBTN = findViewById<ImageView>(R.id.clear_BTN)
+
         searchEditText.addTextChangedListener(createSearchTextWatcher())
         clearBTN.updateVisibility(searchEditText.text)
 
@@ -128,7 +125,7 @@ class SearchActivity : AppCompatActivity() {
     }
 
     private fun performSearch() {
-        val query = searchText ?: return
+        val query = searchText?.cleanText() ?: return
 
         trackApiService.getTracks(query).enqueue(object : Callback<TrackApiResponse> {
             override fun onResponse(
@@ -145,20 +142,10 @@ class SearchActivity : AppCompatActivity() {
                     } else {
                         currentUIState = UIState.RESULTS
                         updateUIState()
-                        Toast.makeText(
-                            this@SearchActivity,
-                            "Найдено ${trackList.size} треков",
-                            Toast.LENGTH_SHORT
-                        ).show()
                     }
                 } else {
                     currentUIState = UIState.ERROR
                     updateUIState()
-                    Toast.makeText(
-                        this@SearchActivity,
-                        "Ошибка сервера: ${response.code()}",
-                        Toast.LENGTH_SHORT
-                    ).show()
                     trackList = emptyList()
                     tracksAdapter.updateTracks(trackList)
                 }
@@ -167,9 +154,6 @@ class SearchActivity : AppCompatActivity() {
             override fun onFailure(call: Call<TrackApiResponse>, t: Throwable) {
                 currentUIState = UIState.ERROR
                 updateUIState()
-                Toast.makeText(this@SearchActivity, "Ошибка сети: ${t.message}", Toast.LENGTH_SHORT)
-                    .show()
-                t.printStackTrace()
                 trackList = emptyList()
                 tracksAdapter.updateTracks(emptyList())
             }
@@ -202,7 +186,6 @@ class SearchActivity : AppCompatActivity() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putString(KEY_SEARCH_TEXT, searchText)
-        outState.putParcelableArrayList(KEY_TRACK_LIST, ArrayList(trackList))
         outState.putString(KEY_CURRENT_STATE, currentUIState.name)
     }
 
@@ -214,9 +197,6 @@ class SearchActivity : AppCompatActivity() {
             clearBTN.updateVisibility(searchText)
             searchEditText.setSelection(savedText.length)
         }
-        val savedTracks = savedInstanceState.getParcelableArrayList<Track>(KEY_TRACK_LIST)
-        trackList = savedTracks ?: emptyList()
-        tracksAdapter.updateTracks(trackList)
         val savedStateName = savedInstanceState.getString(KEY_CURRENT_STATE)
         currentUIState = try {
             UIState.valueOf(savedStateName ?: UIState.INITIAL.name)
@@ -273,7 +253,6 @@ class SearchActivity : AppCompatActivity() {
             UIState.EMPTY -> showEmptyState()
             UIState.RESULTS -> showResultsState()
             UIState.INITIAL -> showInitialState()
-            else -> showInitialState()
         }
     }
 }

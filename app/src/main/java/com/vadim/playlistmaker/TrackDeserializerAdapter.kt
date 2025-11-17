@@ -1,37 +1,24 @@
 package com.vadim.playlistmaker
 
-import com.google.gson.TypeAdapter
-import com.google.gson.stream.JsonReader
-import com.google.gson.stream.JsonWriter
+import com.google.gson.JsonDeserializationContext
+import com.google.gson.JsonDeserializer
+import com.google.gson.JsonElement
+import java.lang.reflect.Type
 
-class TrackDeserializerAdapter: TypeAdapter<Track>() {
+class TrackDeserializerAdapter: JsonDeserializer<Track> {
 
-    override fun write(out: JsonWriter?, value: Track?) {
-        TODO("Not yet implemented")
-    }
-
-    override fun read(reader: JsonReader): Track {
-        var trackName = ""
-        var artistName = ""
-        var trackTimeMillis: String? = null
-        var artworkUrl100 = ""
-        reader.beginObject()
-        while (reader.hasNext()) {
-            when (reader.nextName()) {
-                "trackName" -> trackName = reader.nextString().cleanText()
-                "artistName" -> artistName = reader.nextString().cleanText()
-                "trackTimeMillis" -> trackTimeMillis = reader.nextString().cleanText()
-                "artworkUrl100" -> artworkUrl100 = reader.nextString().cleanText()
-                else -> reader.skipValue()
-            }
-        }
-        reader.endObject()
+    override fun deserialize(
+        json: JsonElement,
+        typeOfT: Type,
+        context: JsonDeserializationContext
+    ): Track {
+        val jsonObject = json.asJsonObject
 
         return Track(
-            trackName = trackName,
-            artistName = artistName,
-            trackTime = trackTimeMillis.epochTimeToTxt(),
-            artworkUrl100 = artworkUrl100
+            trackName = jsonObject.get("trackName").asString.cleanText(),
+            artistName = jsonObject.get("artistName").asString.cleanText(),
+            trackTime = jsonObject.get("trackTimeMillis").asString.cleanText().epochTimeToTxt(),
+            artworkUrl100 = jsonObject.get("artworkUrl100").asString.cleanText()
         )
     }
 
