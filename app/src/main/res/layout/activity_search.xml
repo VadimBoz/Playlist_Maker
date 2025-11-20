@@ -32,6 +32,8 @@
             android:id="@+id/searchEditText"
             style="@style/searchEditText"
             android:layout_marginEnd="@dimen/indent_big"
+            android:imeOptions="actionDone"
+            android:singleLine="true"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:drawableStart="@drawable/search_ico" />
@@ -49,13 +51,82 @@
             />
     </FrameLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/trackList_RV"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:paddingVertical="@dimen/indent_middle"
-        tools:listitem="@layout/item_track"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>
+        android:layout_height="match_parent">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/trackList_RV"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingVertical="@dimen/indent_middle"
+            tools:listitem="@layout/item_track"
+            android:visibility="gone"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:visibility="invisible"/>
+
+
+        <LinearLayout
+            android:id="@+id/frame_empty_search_result"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:visibility="gone"
+            tools:visibility="invisible">
+            
+            <ImageView
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:layout_marginTop="102dp"
+                android:layout_gravity="center"
+                android:src="@drawable/empty_result"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/empty_search_result"
+                android:layout_gravity="center"
+                android:layout_marginTop="@dimen/indent_middle"
+                style="@style/TextAppearanceWarningMassage" />
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:id="@+id/frame_error_connection"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <ImageView
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:layout_marginTop="102dp"
+                android:layout_gravity="center"
+                android:src="@drawable/error_connection"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/connection_error"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:layout_marginTop="@dimen/indent_middle"
+                style="@style/TextAppearanceWarningMassage" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/reload_BTN"
+                android:layout_margin="@dimen/indent_big"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/Reload"
+                android:layout_gravity="center"
+                style="@style/GeneralButton" />
+
+        </LinearLayout>
+
+    </FrameLayout>
 
 
 

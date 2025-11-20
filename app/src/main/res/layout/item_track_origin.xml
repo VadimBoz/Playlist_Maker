@@ -5,7 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-
     <ImageView
         android:id="@+id/artWork_IV"
         android:layout_width="45dp"
@@ -38,34 +37,38 @@
     <TextView
         android:id="@+id/artistName_TV"
         style="@style/TextAppearanceBody"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:ellipsize="end"
         android:maxLines="1"
+        app:layout_constraintHorizontal_weight="1"
         app:layout_constrainedWidth="true"
-        app:layout_constraintHorizontal_bias="0"
         app:layout_constraintBottom_toBottomOf="@+id/artWork_IV"
         app:layout_constraintEnd_toStartOf="@+id/trackTime_TV"
         app:layout_constraintStart_toStartOf="@+id/name_Track_TV"
         app:layout_constraintTop_toBottomOf="@+id/name_Track_TV"
         app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintHorizontal_bias="0"
         tool:text="The Beatles" />
+
 
     <TextView
         android:id="@+id/trackTime_TV"
         style="@style/TextAppearanceBody"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/indent_small"
+        android:maxWidth="60dp"
         android:ellipsize="end"
         android:maxLines="1"
-        android:layout_marginEnd="@dimen/indent_extra_small"
+        app:layout_constraintHorizontal_weight="2"
         app:drawableStartCompat="@drawable/circle_13_13"
         app:drawableTint="@color/colorOnSecondaryVariant"
         app:layout_constraintBottom_toBottomOf="@+id/artistName_TV"
         app:layout_constraintEnd_toEndOf="@+id/name_Track_TV"
         app:layout_constraintStart_toEndOf="@+id/artistName_TV"
         app:layout_constraintTop_toTopOf="@+id/artistName_TV"
-        tool:text="8888:88" />
+        tool:text="8888:88000" />
 
     <ImageView
         android:id="@+id/endIco_IV"
