@@ -156,7 +156,7 @@ class SearchActivity : AppCompatActivity() {
             currentUIState = UIState.INITIAL
             updateUIState()
         }
-        showInitialState()
+        updateUIState()
     }
 
     override fun onPause() {
@@ -263,46 +263,6 @@ class SearchActivity : AppCompatActivity() {
         view.clearFocus()
     }
 
-    private fun showInitialState() {
-        trackListRecyclerView.visibility = View.GONE
-        emptySearchFrame.visibility = View.GONE
-        errorConnectionFrame.visibility = View.GONE
-        historySearchFrame.visibility = View.GONE
-        searchEditText.postDelayed({
-            searchEditText.requestFocus()
-        }, 1000)
-    }
-
-    private fun showResultsState() {
-        trackListRecyclerView.visibility = View.VISIBLE
-        emptySearchFrame.visibility = View.GONE
-        errorConnectionFrame.visibility = View.GONE
-        historySearchFrame.visibility = View.GONE
-    }
-
-    private fun showEmptyState() {
-        trackListRecyclerView.visibility = View.GONE
-        emptySearchFrame.visibility = View.VISIBLE
-        errorConnectionFrame.visibility = View.GONE
-        historySearchFrame.visibility = View.GONE
-    }
-
-    private fun showErrorState() {
-        trackListRecyclerView.visibility = View.GONE
-        emptySearchFrame.visibility = View.GONE
-        errorConnectionFrame.visibility = View.VISIBLE
-        historySearchFrame.visibility = View.GONE
-    }
-
-    private fun showHistoryTracksState() {
-        trackListRecyclerView.visibility = View.GONE
-        emptySearchFrame.visibility = View.GONE
-        errorConnectionFrame.visibility = View.GONE
-        historySearchFrame.visibility = View.VISIBLE
-        tracksHistoryAdapter.updateTracks(searchHistoryManager.trackListHistory)
-    }
-
-
     private fun initViews() {
         searchEditText = findViewById(R.id.searchEditText)
         clearEditTextBTN = findViewById(R.id.clear_BTN)
@@ -317,12 +277,30 @@ class SearchActivity : AppCompatActivity() {
     }
 
     private fun updateUIState() {
+        trackListRecyclerView.visibility = View.GONE
+        emptySearchFrame.visibility = View.GONE
+        errorConnectionFrame.visibility = View.GONE
+        historySearchFrame.visibility = View.GONE
+
         when (currentUIState) {
-            UIState.ERROR -> showErrorState()
-            UIState.EMPTY -> showEmptyState()
-            UIState.RESULTS -> showResultsState()
-            UIState.INITIAL -> showInitialState()
-            UIState.HISTORY_RESULTS -> showHistoryTracksState()
+            UIState.ERROR -> {
+                errorConnectionFrame.visibility = View.VISIBLE
+            }
+            UIState.EMPTY -> {
+                emptySearchFrame.visibility = View.VISIBLE
+            }
+            UIState.RESULTS -> {
+                trackListRecyclerView.visibility = View.VISIBLE
+            }
+            UIState.INITIAL -> {
+                searchEditText.postDelayed({
+                    searchEditText.requestFocus()
+                }, 1000)
+            }
+            UIState.HISTORY_RESULTS -> {
+                historySearchFrame.visibility = View.VISIBLE
+                tracksHistoryAdapter.updateTracks(searchHistoryManager.trackListHistory)
+            }
         }
     }
 
