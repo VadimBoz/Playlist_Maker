@@ -7,6 +7,7 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class Track(
+    val trackId: Long,
     val trackName: String,
     val artistName: String,
     @SerializedName("trackTimeMillis") val trackTime: String,

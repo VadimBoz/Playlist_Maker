@@ -27,7 +27,6 @@
         android:paddingHorizontal="@dimen/indent_middle_compact"
         android:background="@drawable/search_background">
 
-
         <EditText
             android:id="@+id/searchEditText"
             style="@style/searchEditText"
@@ -47,8 +46,7 @@
             android:scaleType="centerInside"
             android:src="@drawable/clear_ico"
             android:visibility="invisible"
-            tools:visibility="visible"
-            />
+            tools:visibility="visible" />
     </FrameLayout>
 
     <FrameLayout
@@ -65,6 +63,41 @@
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             tools:visibility="invisible"/>
 
+        <LinearLayout
+            android:id="@+id/frame_history_search"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/you_were_looking_for"
+                android:layout_marginTop="42dp"
+                android:layout_marginBottom="@dimen/indent_middle_plus"
+                style="@style/TextAppearanceTitle"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/savedTracks_RV"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:paddingVertical="@dimen/indent_middle"
+                tools:listitem="@layout/item_track"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/remove_history_BTN"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/indent_big"
+                android:text="@string/remove_history"
+                android:layout_gravity="center"
+                style="@style/GeneralButton" />
+
+        </LinearLayout>
 
         <LinearLayout
             android:id="@+id/frame_empty_search_result"
@@ -72,7 +105,7 @@
             android:layout_height="match_parent"
             android:orientation="vertical"
             android:visibility="gone"
-            tools:visibility="invisible">
+            tools:visibility="gone">
             
             <ImageView
                 android:layout_width="120dp"
@@ -87,9 +120,8 @@
                 android:text="@string/empty_search_result"
                 android:layout_gravity="center"
                 android:layout_marginTop="@dimen/indent_middle"
-                style="@style/TextAppearanceWarningMassage" />
+                style="@style/TextAppearanceTitle"/>
         </LinearLayout>
-
 
         <LinearLayout
             android:id="@+id/frame_error_connection"
@@ -97,7 +129,7 @@
             android:layout_height="match_parent"
             android:orientation="vertical"
             android:visibility="gone"
-            tools:visibility="visible">
+            tools:visibility="gone">
 
             <ImageView
                 android:layout_width="120dp"
@@ -111,9 +143,8 @@
                 android:layout_height="wrap_content"
                 android:text="@string/connection_error"
                 android:layout_gravity="center"
-                android:gravity="center"
                 android:layout_marginTop="@dimen/indent_middle"
-                style="@style/TextAppearanceWarningMassage" />
+                style="@style/TextAppearanceTitle" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/reload_BTN"
@@ -127,8 +158,5 @@
         </LinearLayout>
 
     </FrameLayout>
-
-
-
 
 </LinearLayout>
