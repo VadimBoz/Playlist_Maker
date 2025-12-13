@@ -1,8 +1,10 @@
 package com.vadim.playlistmaker
 
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
@@ -22,6 +24,7 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import kotlin.math.abs
 
 class SearchActivity : AppCompatActivity() {
 
@@ -78,7 +81,8 @@ class SearchActivity : AppCompatActivity() {
 
         retrofit = Retrofit.Builder()
             .baseUrl(trackBaseUrl)
-            .addConverterFactory(GsonConverterFactory.create(
+            .addConverterFactory(
+                GsonConverterFactory.create(
                     GsonBuilder()
                         .registerTypeAdapter(Track::class.java, TrackDeserializerAdapter())
                         .create()
@@ -92,11 +96,11 @@ class SearchActivity : AppCompatActivity() {
 
         clearEditTextBTN.updateVisibilityImage(searchEditText.text)
 
-        searchEditText.setOnFocusChangeListener  { view, hasFocus ->
+        searchEditText.setOnFocusChangeListener { view, hasFocus ->
             if (hasFocus
                 && searchEditText.text.isNullOrEmpty()
                 && searchHistoryManager.trackListHistory.isNotEmpty()
-                ) {
+            ) {
                 currentUIState = UIState.HISTORY_RESULTS
                 updateUIState()
             }
@@ -124,6 +128,9 @@ class SearchActivity : AppCompatActivity() {
                 "трек ${track.trackName} добавлен в список",
                 Toast.LENGTH_SHORT
             ).show()
+            val intent = Intent(this, AudioPlayerActivity::class.java)
+            intent.putExtra("track", track)
+            startActivity(intent)
         }
 
         trackListRecyclerView.adapter = tracksAdapter
@@ -138,7 +145,11 @@ class SearchActivity : AppCompatActivity() {
             }
         )
 
-        tracksHistoryAdapter = TracksAdapter(searchHistoryManager.trackListHistory) {}
+        tracksHistoryAdapter = TracksAdapter(searchHistoryManager.trackListHistory) { track ->
+            val intent = Intent(this, AudioPlayerActivity::class.java)
+            intent.putExtra("track", track)
+            startActivity(intent)
+        }
         trackListHistoryRecyclerView.adapter = tracksHistoryAdapter
 
         searchEditText.setOnEditorActionListener { _, actionId, _ ->
@@ -176,6 +187,19 @@ class SearchActivity : AppCompatActivity() {
                     trackList = response.body()?.tracksList ?: emptyList()
                     tracksAdapter.updateTracks(trackList)
 
+                    if (BuildConfig.DEBUG) {
+                        val emptyFieldsCount = trackList.sumOf { track ->
+                            track.javaClass.declaredFields.count { field ->
+                                field.isAccessible = true
+                                val value = field.get(track)
+                                value == null ||
+                                        (value is String && (value.isEmpty() || value == "0")) ||
+                                        (value is Number && abs(value.toDouble()) < 1e-4 )
+                            }
+                        }
+                        Log.d("SearchActivity", "Количество пустых полей : $emptyFieldsCount")
+                    }
+
                     if (trackList.isEmpty()) {
                         currentUIState = UIState.EMPTY
                         updateUIState()
@@ -209,7 +233,7 @@ class SearchActivity : AppCompatActivity() {
                 if (searchEditText.hasFocus()
                     && s.isNullOrEmpty()
                     && searchHistoryManager.trackListHistory.isNotEmpty()
-                    ) {
+                ) {
                     currentUIState = UIState.HISTORY_RESULTS
                     updateUIState()
                 } else {
@@ -286,17 +310,21 @@ class SearchActivity : AppCompatActivity() {
             UIState.ERROR -> {
                 errorConnectionFrame.visibility = View.VISIBLE
             }
+
             UIState.EMPTY -> {
                 emptySearchFrame.visibility = View.VISIBLE
             }
+
             UIState.RESULTS -> {
                 trackListRecyclerView.visibility = View.VISIBLE
             }
+
             UIState.INITIAL -> {
                 searchEditText.postDelayed({
                     searchEditText.requestFocus()
                 }, 1000)
             }
+
             UIState.HISTORY_RESULTS -> {
                 historySearchFrame.visibility = View.VISIBLE
                 tracksHistoryAdapter.updateTracks(searchHistoryManager.trackListHistory)
