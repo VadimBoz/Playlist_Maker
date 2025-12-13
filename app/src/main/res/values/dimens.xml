@@ -6,9 +6,12 @@
     <dimen name="indent_middle">16dp</dimen>
     <dimen name="indent_middle_plus">24dp</dimen>
     <dimen name="indent_big">24dp</dimen>
+    <dimen name="indent_big_super">28dp</dimen>
     <dimen name="icon_size_middle">24dp</dimen>
     <dimen name="icon_size_small">16dp</dimen>
     <dimen name="icon_size_test">60dp</dimen>
+
+    <dimen name="corner_radius_art_work">8dp</dimen>
 
 
 </resources>

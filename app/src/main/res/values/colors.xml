@@ -8,6 +8,7 @@
     <color name="pure_black">#000000</color>
     <color name="blue">#3772E7</color>
     <color name="switch_activated">#3772E7</color>
+    <color name="transparent">#00FFFFFF</color>
 
 
     <color name="background_main">@color/blue</color>
@@ -18,6 +19,7 @@
 
     <color name="colorOnPrimary">@color/pure_black</color>
     <color name="colorOnSecondary">@color/pure_black</color>
+    <color name="colorOnThird">@color/grey_light</color>
 
     <color name="colorOnSecondaryVariant">@color/grey_light</color>
 
