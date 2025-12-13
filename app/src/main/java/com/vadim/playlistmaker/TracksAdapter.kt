@@ -4,10 +4,13 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 
-class TracksAdapter(private var tracks: List<Track>) : RecyclerView.Adapter<TrackViewHolder>() {
+class TracksAdapter(private var tracks: List<Track>,
+                    private val onTrackItemClick: (Track) -> Unit
+        ) : RecyclerView.Adapter<TrackViewHolder>() {
 
     fun updateTracks(newTracks: List<Track>) {
         tracks = newTracks
@@ -20,7 +23,11 @@ class TracksAdapter(private var tracks: List<Track>) : RecyclerView.Adapter<Trac
     }
 
     override fun onBindViewHolder(holder: TrackViewHolder, position: Int) {
-        holder.bind(tracks[position])
+        val track = tracks[position]
+        holder.bind(track)
+        holder.itemView.setOnClickListener {
+            onTrackItemClick(track)
+        }
     }
 
     override fun getItemCount(): Int {

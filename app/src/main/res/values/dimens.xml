@@ -4,6 +4,7 @@
     <dimen name="indent_small">8dp</dimen>
     <dimen name="indent_middle_compact">12dp</dimen>
     <dimen name="indent_middle">16dp</dimen>
+    <dimen name="indent_middle_plus">24dp</dimen>
     <dimen name="indent_big">24dp</dimen>
     <dimen name="icon_size_middle">24dp</dimen>
     <dimen name="icon_size_small">16dp</dimen>

@@ -28,16 +28,23 @@ class SearchActivity : AppCompatActivity() {
     private lateinit var searchEditText: EditText
     private val KEY_SEARCH_TEXT = "search_text"
     private var KEY_CURRENT_STATE = "current_UI_state"
-    private lateinit var clearBTN: ImageView
+    private lateinit var clearEditTextBTN: ImageView
     private val trackBaseUrl = "https://itunes.apple.com"
+    private lateinit var toolBarBTN: MaterialToolbar
     private lateinit var retrofit: Retrofit
     private lateinit var trackApiService: TrackApiService
     private var trackList = emptyList<Track>()
     private lateinit var tracksAdapter: TracksAdapter
-    private lateinit var recyclerView: RecyclerView
+    private lateinit var tracksHistoryAdapter: TracksAdapter
+    private lateinit var trackListRecyclerView: RecyclerView
+    private lateinit var trackListHistoryRecyclerView: RecyclerView
     private lateinit var errorConnectionFrame: View
     private lateinit var emptySearchFrame: View
     private lateinit var reloadBTN: MaterialButton
+    private lateinit var historySearchFrame: View
+    private lateinit var removeAllHistoryBTN: MaterialButton
+    private lateinit var searchHistoryManager: SearchHistoryManager
+
     private var currentUIState: UIState = UIState.INITIAL
 
     companion object {
@@ -45,7 +52,7 @@ class SearchActivity : AppCompatActivity() {
     }
 
     private enum class UIState {
-        INITIAL, RESULTS, EMPTY, ERROR
+        INITIAL, RESULTS, EMPTY, ERROR, HISTORY_RESULTS
     }
 
 
@@ -60,12 +67,14 @@ class SearchActivity : AppCompatActivity() {
             insets
         }
 
-        val toolBarBTN = findViewById<MaterialToolbar>(R.id.toolBarBack_BTN)
+        searchHistoryManager = SearchHistoryManager(this)
+        searchHistoryManager.loadTrackHistoryFromPref()
+
+        initViews()
+
         toolBarBTN.setNavigationOnClickListener {
             finish()
         }
-
-        initViews()
 
         retrofit = Retrofit.Builder()
             .baseUrl(trackBaseUrl)
@@ -79,14 +88,24 @@ class SearchActivity : AppCompatActivity() {
 
         trackApiService = retrofit.create(TrackApiService::class.java)
 
-
         searchEditText.addTextChangedListener(createSearchTextWatcher())
-        clearBTN.updateVisibility(searchEditText.text)
 
-        clearBTN.setOnClickListener {
+        clearEditTextBTN.updateVisibilityImage(searchEditText.text)
+
+        searchEditText.setOnFocusChangeListener  { view, hasFocus ->
+            if (hasFocus
+                && searchEditText.text.isNullOrEmpty()
+                && searchHistoryManager.trackListHistory.isNotEmpty()
+                ) {
+                currentUIState = UIState.HISTORY_RESULTS
+                updateUIState()
+            }
+        }
+
+        clearEditTextBTN.setOnClickListener {
             searchEditText.setText("")
             searchText = ""
-            clearBTN.updateVisibility("")
+            clearEditTextBTN.updateVisibilityImage("")
             trackList = emptyList()
             tracksAdapter.updateTracks(emptyList())
             currentUIState = UIState.INITIAL
@@ -98,8 +117,15 @@ class SearchActivity : AppCompatActivity() {
             performSearch()
         }
 
-        val trackListRecyclerView = findViewById<RecyclerView>(R.id.trackList_RV)
-        tracksAdapter = TracksAdapter(trackList)
+        tracksAdapter = TracksAdapter(trackList) { track ->
+            searchHistoryManager.addTrackToHistory(track)
+            Toast.makeText(
+                this,
+                "трек ${track.trackName} добавлен в список",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+
         trackListRecyclerView.adapter = tracksAdapter
         trackListRecyclerView.addOnScrollListener(
             object : RecyclerView.OnScrollListener() {
@@ -112,6 +138,9 @@ class SearchActivity : AppCompatActivity() {
             }
         )
 
+        tracksHistoryAdapter = TracksAdapter(searchHistoryManager.trackListHistory) {}
+        trackListHistoryRecyclerView.adapter = tracksHistoryAdapter
+
         searchEditText.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
                 performSearch()
@@ -121,7 +150,18 @@ class SearchActivity : AppCompatActivity() {
             } else false
         }
 
-        showInitialState()
+        removeAllHistoryBTN.setOnClickListener {
+            searchHistoryManager.clearTrackHistory()
+            tracksHistoryAdapter.updateTracks(emptyList())
+            currentUIState = UIState.INITIAL
+            updateUIState()
+        }
+        updateUIState()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        searchHistoryManager.saveTrackHistory()
     }
 
     private fun performSearch() {
@@ -166,16 +206,26 @@ class SearchActivity : AppCompatActivity() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                if (searchEditText.hasFocus()
+                    && s.isNullOrEmpty()
+                    && searchHistoryManager.trackListHistory.isNotEmpty()
+                    ) {
+                    currentUIState = UIState.HISTORY_RESULTS
+                    updateUIState()
+                } else {
+                    currentUIState = UIState.INITIAL
+                    updateUIState()
+                }
             }
 
             override fun afterTextChanged(s: Editable?) {
                 searchText = s.toString()
-                clearBTN.updateVisibility(searchText)
+                clearEditTextBTN.updateVisibilityImage(searchText)
             }
         }
     }
 
-    private fun ImageView.updateVisibility(text: CharSequence?) {
+    private fun ImageView.updateVisibilityImage(text: CharSequence?) {
         visibility = if (text.isNullOrEmpty()) {
             View.INVISIBLE
         } else {
@@ -194,7 +244,7 @@ class SearchActivity : AppCompatActivity() {
         savedInstanceState.getString(KEY_SEARCH_TEXT)?.let { savedText ->
             searchText = savedText
             searchEditText.setText(savedText)
-            clearBTN.updateVisibility(searchText)
+            clearEditTextBTN.updateVisibilityImage(searchText)
             searchEditText.setSelection(savedText.length)
         }
         val savedStateName = savedInstanceState.getString(KEY_CURRENT_STATE)
@@ -213,47 +263,47 @@ class SearchActivity : AppCompatActivity() {
         view.clearFocus()
     }
 
-
-    private fun showInitialState() {
-        recyclerView.visibility = View.GONE
-        emptySearchFrame.visibility = View.GONE
-        errorConnectionFrame.visibility = View.GONE
-    }
-
-    private fun showResultsState() {
-        recyclerView.visibility = View.VISIBLE
-        emptySearchFrame.visibility = View.GONE
-        errorConnectionFrame.visibility = View.GONE
-    }
-
-    private fun showEmptyState() {
-        recyclerView.visibility = View.GONE
-        emptySearchFrame.visibility = View.VISIBLE
-        errorConnectionFrame.visibility = View.GONE
-    }
-
-    private fun showErrorState() {
-        recyclerView.visibility = View.GONE
-        emptySearchFrame.visibility = View.GONE
-        errorConnectionFrame.visibility = View.VISIBLE
-    }
-
     private fun initViews() {
         searchEditText = findViewById(R.id.searchEditText)
-        clearBTN = findViewById(R.id.clear_BTN)
-        recyclerView = findViewById(R.id.trackList_RV)
+        clearEditTextBTN = findViewById(R.id.clear_BTN)
+        trackListRecyclerView = findViewById(R.id.trackList_RV)
         errorConnectionFrame = findViewById(R.id.frame_error_connection)
         emptySearchFrame = findViewById(R.id.frame_empty_search_result)
         reloadBTN = findViewById(R.id.reload_BTN)
+        historySearchFrame = findViewById(R.id.frame_history_search)
+        removeAllHistoryBTN = findViewById(R.id.remove_history_BTN)
+        trackListHistoryRecyclerView = findViewById(R.id.savedTracks_RV)
+        toolBarBTN = findViewById<MaterialToolbar>(R.id.toolBarBack_BTN)
     }
 
     private fun updateUIState() {
+        trackListRecyclerView.visibility = View.GONE
+        emptySearchFrame.visibility = View.GONE
+        errorConnectionFrame.visibility = View.GONE
+        historySearchFrame.visibility = View.GONE
+
         when (currentUIState) {
-            UIState.ERROR -> showErrorState()
-            UIState.EMPTY -> showEmptyState()
-            UIState.RESULTS -> showResultsState()
-            UIState.INITIAL -> showInitialState()
+            UIState.ERROR -> {
+                errorConnectionFrame.visibility = View.VISIBLE
+            }
+            UIState.EMPTY -> {
+                emptySearchFrame.visibility = View.VISIBLE
+            }
+            UIState.RESULTS -> {
+                trackListRecyclerView.visibility = View.VISIBLE
+            }
+            UIState.INITIAL -> {
+                searchEditText.postDelayed({
+                    searchEditText.requestFocus()
+                }, 1000)
+            }
+            UIState.HISTORY_RESULTS -> {
+                historySearchFrame.visibility = View.VISIBLE
+                tracksHistoryAdapter.updateTracks(searchHistoryManager.trackListHistory)
+            }
         }
     }
+
+
 }
 

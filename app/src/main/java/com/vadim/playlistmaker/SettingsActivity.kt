@@ -1,6 +1,8 @@
 package com.vadim.playlistmaker
 
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
 import android.widget.TextView
@@ -29,13 +31,12 @@ class SettingsActivity : AppCompatActivity() {
             finish()
         }
 
-        val switchBTN = findViewById<SwitchMaterial>(R.id.switch_BTN)
-        switchBTN.setOnCheckedChangeListener { _, isChecked ->
-            Toast.makeText(
-                this,
-                "switch is $isChecked",
-                Toast.LENGTH_SHORT
-            ).show()
+        val switchBTN = findViewById<SwitchMaterial>(R.id.switchTheme_SWITCH)
+
+        switchBTN.isChecked = (applicationContext as App).darkTheme
+        switchBTN.setOnCheckedChangeListener { switcher, checked ->
+            (applicationContext as App).switchTheme(checked)
+
         }
 
 

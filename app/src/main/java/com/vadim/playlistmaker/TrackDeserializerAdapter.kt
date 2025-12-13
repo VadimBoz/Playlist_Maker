@@ -15,6 +15,7 @@ class TrackDeserializerAdapter: JsonDeserializer<Track> {
         val jsonObject = json.asJsonObject
 
         return Track(
+            trackId = jsonObject.get("trackId").asString.cleanText().toLong(),
             trackName = jsonObject.get("trackName").asString.cleanText(),
             artistName = jsonObject.get("artistName").asString.cleanText(),
             trackTime = jsonObject.get("trackTimeMillis").asString.cleanText().epochTimeToTxt(),

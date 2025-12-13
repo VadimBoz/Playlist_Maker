@@ -21,7 +21,7 @@
 
 
     <com.google.android.material.switchmaterial.SwitchMaterial
-        android:id="@+id/switch_BTN"
+        android:id="@+id/switchTheme_SWITCH"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:minHeight="61dp"
