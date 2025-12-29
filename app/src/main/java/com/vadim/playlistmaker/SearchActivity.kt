@@ -2,6 +2,8 @@ package com.vadim.playlistmaker
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
@@ -18,6 +20,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.google.gson.GsonBuilder
 import retrofit2.Call
 import retrofit2.Callback
@@ -28,6 +31,8 @@ import kotlin.math.abs
 
 class SearchActivity : AppCompatActivity() {
 
+    private val SEARCH_DEBOUNCE_DELAY = 2000L
+    private val CLICK_DEBOUNCE_DELAY = 1000L
     private lateinit var searchEditText: EditText
     private val KEY_SEARCH_TEXT = "search_text"
     private var KEY_CURRENT_STATE = "current_UI_state"
@@ -47,15 +52,19 @@ class SearchActivity : AppCompatActivity() {
     private lateinit var historySearchFrame: View
     private lateinit var removeAllHistoryBTN: MaterialButton
     private lateinit var searchHistoryManager: SearchHistoryManager
+    private lateinit var progressCircularPB: CircularProgressIndicator
 
     private var currentUIState: UIState = UIState.INITIAL
+
+    private var isClickAllowed = true
+    private val handler = Handler(Looper.getMainLooper())
 
     companion object {
         private var searchText: String? = null
     }
 
     private enum class UIState {
-        INITIAL, RESULTS, EMPTY, ERROR, HISTORY_RESULTS
+    INITIAL, RESULTS, EMPTY, ERROR, HISTORY_RESULTS, LOADING_SEARCH_RESULTS
     }
 
 
@@ -115,13 +124,16 @@ class SearchActivity : AppCompatActivity() {
             currentUIState = UIState.INITIAL
             updateUIState()
             hideKeyboard()
+            handler.removeCallbacks(searchRunnable)
         }
 
         reloadBTN.setOnClickListener {
-            performSearch()
+            handler.removeCallbacks(searchRunnable)
+            searchRunnable.run()
         }
 
         tracksAdapter = TracksAdapter(trackList) { track ->
+            if (!clickDebounce()) return@TracksAdapter
             searchHistoryManager.addTrackToHistory(track)
             Toast.makeText(
                 this,
@@ -146,6 +158,7 @@ class SearchActivity : AppCompatActivity() {
         )
 
         tracksHistoryAdapter = TracksAdapter(searchHistoryManager.trackListHistory) { track ->
+            if (!clickDebounce()) return@TracksAdapter
             val intent = Intent(this, AudioPlayerActivity::class.java)
             intent.putExtra("track", track)
             startActivity(intent)
@@ -154,7 +167,8 @@ class SearchActivity : AppCompatActivity() {
 
         searchEditText.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
-                performSearch()
+                handler.removeCallbacks(searchRunnable)
+                searchRunnable.run()
                 hideKeyboard()
                 true
 
@@ -172,11 +186,14 @@ class SearchActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
+        handler.removeCallbacks(searchRunnable)
         searchHistoryManager.saveTrackHistory()
     }
 
     private fun performSearch() {
         val query = searchText?.cleanText() ?: return
+        currentUIState = UIState.LOADING_SEARCH_RESULTS
+        updateUIState()
 
         trackApiService.getTracks(query).enqueue(object : Callback<TrackApiResponse> {
             override fun onResponse(
@@ -184,6 +201,8 @@ class SearchActivity : AppCompatActivity() {
                 response: Response<TrackApiResponse>
             ) {
                 if (response.isSuccessful) {
+                    currentUIState = UIState.INITIAL
+                    updateUIState()
                     trackList = response.body()?.tracksList ?: emptyList()
                     tracksAdapter.updateTracks(trackList)
 
@@ -230,23 +249,52 @@ class SearchActivity : AppCompatActivity() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                if (searchEditText.hasFocus()
-                    && s.isNullOrEmpty()
-                    && searchHistoryManager.trackListHistory.isNotEmpty()
-                ) {
-                    currentUIState = UIState.HISTORY_RESULTS
-                    updateUIState()
-                } else {
-                    currentUIState = UIState.INITIAL
-                    updateUIState()
-                }
+                handler.removeCallbacks(searchRunnable)
             }
 
             override fun afterTextChanged(s: Editable?) {
                 searchText = s.toString()
                 clearEditTextBTN.updateVisibilityImage(searchText)
+                handler.removeCallbacks(searchRunnable)
+
+                if (searchText.isNullOrEmpty()) {
+                    if (searchEditText.hasFocus() && searchHistoryManager.trackListHistory.isNotEmpty()) {
+                        currentUIState = UIState.HISTORY_RESULTS
+                    } else {
+                        currentUIState = UIState.INITIAL
+                    }
+                    updateUIState()
+                    trackList = emptyList()
+                    tracksAdapter.updateTracks(emptyList())
+                } else {
+                    currentUIState = UIState.INITIAL
+                    updateUIState()
+                    if (searchText!!.length > 2) {
+                        searchDebounce()
+                    }
+                }
             }
         }
+    }
+
+    private val searchRunnable = Runnable {
+        performSearch()
+    }
+
+    private fun searchDebounce() {
+        handler.removeCallbacks(searchRunnable)
+        if (!searchText.isNullOrEmpty() && searchText!!.length > 2) {
+            handler.postDelayed(searchRunnable, SEARCH_DEBOUNCE_DELAY)
+        }
+    }
+
+    private fun clickDebounce() : Boolean {
+        val current = isClickAllowed
+        if (isClickAllowed) {
+            isClickAllowed = false
+            handler.postDelayed({ isClickAllowed = true }, CLICK_DEBOUNCE_DELAY)
+        }
+        return current
     }
 
     private fun ImageView.updateVisibilityImage(text: CharSequence?) {
@@ -298,6 +346,7 @@ class SearchActivity : AppCompatActivity() {
         removeAllHistoryBTN = findViewById(R.id.remove_history_BTN)
         trackListHistoryRecyclerView = findViewById(R.id.savedTracks_RV)
         toolBarBTN = findViewById<MaterialToolbar>(R.id.toolBarBack_BTN)
+        progressCircularPB = findViewById(R.id.progress_circular)
     }
 
     private fun updateUIState() {
@@ -305,6 +354,8 @@ class SearchActivity : AppCompatActivity() {
         emptySearchFrame.visibility = View.GONE
         errorConnectionFrame.visibility = View.GONE
         historySearchFrame.visibility = View.GONE
+        progressCircularPB.visibility = View.GONE
+
 
         when (currentUIState) {
             UIState.ERROR -> {
@@ -328,6 +379,10 @@ class SearchActivity : AppCompatActivity() {
             UIState.HISTORY_RESULTS -> {
                 historySearchFrame.visibility = View.VISIBLE
                 tracksHistoryAdapter.updateTracks(searchHistoryManager.trackListHistory)
+            }
+
+            UIState.LOADING_SEARCH_RESULTS -> {
+                progressCircularPB.visibility = View.VISIBLE
             }
         }
     }

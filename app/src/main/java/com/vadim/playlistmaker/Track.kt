@@ -14,5 +14,6 @@ data class Track(
     @SerializedName("collectionName") val album: String,
     @SerializedName("releaseDate") val year: Int,
     @SerializedName("primaryGenreName") val genre: String,
-    @SerializedName("country") val country: String,
+    val country: String,
+    val previewUrl: String
 ): Parcelable

@@ -14,6 +14,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.google.android.material.appbar.MaterialToolbar
+import kotlin.properties.Delegates
 
 class AudioPlayerActivity : AppCompatActivity() {
 
@@ -34,9 +35,13 @@ class AudioPlayerActivity : AppCompatActivity() {
     private lateinit var playBTN: ImageButton
     private lateinit var addToPlayListBTN: ImageButton
     private lateinit var addToFavoriteBTN: ImageButton
-    private  var isPlaying: Boolean = false
-    private var isFavorite: Boolean = false
-    private var isAddedToPlayList: Boolean = false
+    private var isPlaying = false
+    private var isFavorite = false
+    private var isAddedToPlayList = false
+    private val KEY_TRACK = "track"
+    private val KEY_IS_PLAYING = "is_playing"
+    private val KEY_IS_FAVORITE = "is_favorite"
+    private val KEY_IS_ADDED = "is_added"
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -70,7 +75,15 @@ class AudioPlayerActivity : AppCompatActivity() {
         addToPlayListBTN = findViewById(R.id.btn_add)
         addToFavoriteBTN = findViewById(R.id.btn_favorite)
 
-        track = intent.getParcelableExtra<Track>("track")
+        if (savedInstanceState != null) {
+            track = savedInstanceState.getParcelable(KEY_TRACK)
+            isPlaying = savedInstanceState.getBoolean(KEY_IS_PLAYING, false)
+            isFavorite = savedInstanceState.getBoolean(KEY_IS_FAVORITE, false)
+            isAddedToPlayList = savedInstanceState.getBoolean(KEY_IS_ADDED, false)
+        } else {
+            track = intent.getParcelableExtra("track")
+        }
+
         track.let { track ->
             trackNameTV.text = track?.trackName
             artistNameTV.text = track?.artistName
@@ -96,6 +109,8 @@ class AudioPlayerActivity : AppCompatActivity() {
             else genreGroup.visibility = Group.VISIBLE
 
         }
+
+        updateButtonsState()
 
         Glide.with(this)
             .load(track?.artworkUrl100?.artWorkToFullSize())
@@ -139,13 +154,27 @@ class AudioPlayerActivity : AppCompatActivity() {
         }
     }
 
-    override fun onSaveInstanceState(outState: Bundle, outPersistentState: PersistableBundle) {
-        super.onSaveInstanceState(outState, outPersistentState)
-        outState.putParcelable("track", track)
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putParcelable(KEY_TRACK, track)
+        outState.putBoolean(KEY_IS_PLAYING, isPlaying)
+        outState.putBoolean(KEY_IS_FAVORITE, isFavorite)
+        outState.putBoolean(KEY_IS_ADDED, isAddedToPlayList)
+
     }
 
-    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
-        super.onRestoreInstanceState(savedInstanceState)
-        track = savedInstanceState.getParcelable("track")
+    private fun updateButtonsState() {
+        val favoriteIcon = if (isFavorite) R.drawable.ico_button_favorite_active
+        else R.drawable.ico_button_favorite_inactive
+        addToFavoriteBTN.setImageResource(favoriteIcon)
+
+        val addIcon = if (isAddedToPlayList) R.drawable.ico_button_added
+        else R.drawable.ico_button_add
+        addToPlayListBTN.setImageResource(addIcon)
+
+        val playIcon = if (isPlaying) R.drawable.ico_button_pause
+        else R.drawable.ico_button_play
+        playBTN.setImageResource(playIcon)
     }
+
 }
