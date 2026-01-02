@@ -18,6 +18,12 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.google.android.material.appbar.MaterialToolbar
 import java.lang.ref.WeakReference
 
+
+
+
+const val TIMER_UPDATE_DELAY_MS = 300L    // Задержка обновления таймера
+const val TRACK_DURATION_MS = 30000L      // Длительность трека
+
 class AudioPlayerActivity : AppCompatActivity() {
 
     private lateinit var toolbar: MaterialToolbar
@@ -261,9 +267,9 @@ class AudioPlayerActivity : AppCompatActivity() {
 
                 if (mediaPlayer.isPlaying) {
                     val curTime = mediaPlayer.currentPosition
-                    if (curTime < 30000 - 300) {
+                    if (curTime < TRACK_DURATION_MS - TIMER_UPDATE_DELAY_MS) {
                         timerTV.text = curTime.toString().epochTimeToTxt()
-                        mainThreadHandler.postDelayed(this, 300)
+                        mainThreadHandler.postDelayed(this, TIMER_UPDATE_DELAY_MS)
                     } else {
                         timerTV.text = getString(R.string.zero_duration)
                         stopTimer()
