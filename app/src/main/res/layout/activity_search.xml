@@ -61,7 +61,8 @@
             android:layout_gravity="center_horizontal"
             android:indeterminate="true"
             app:indicatorColor="@color/blue"
-            android:visibility="visible" />
+            android:visibility="gone"
+            tools:visibility="visible"/>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/trackList_RV"

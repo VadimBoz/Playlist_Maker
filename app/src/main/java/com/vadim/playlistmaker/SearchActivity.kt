@@ -27,6 +27,7 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.lang.ref.WeakReference
 import kotlin.math.abs
 
 class SearchActivity : AppCompatActivity() {
@@ -53,7 +54,8 @@ class SearchActivity : AppCompatActivity() {
     private lateinit var removeAllHistoryBTN: MaterialButton
     private lateinit var searchHistoryManager: SearchHistoryManager
     private lateinit var progressCircularPB: CircularProgressIndicator
-
+    private lateinit var weakRef: WeakReference<SearchActivity>
+    private var currentCall: Call<TrackApiResponse>? = null
     private var currentUIState: UIState = UIState.INITIAL
 
     private var isClickAllowed = true
@@ -81,6 +83,7 @@ class SearchActivity : AppCompatActivity() {
 
         searchHistoryManager = SearchHistoryManager(this)
         searchHistoryManager.loadTrackHistoryFromPref()
+        weakRef = WeakReference(this)
 
         initViews()
 
@@ -110,8 +113,7 @@ class SearchActivity : AppCompatActivity() {
                 && searchEditText.text.isNullOrEmpty()
                 && searchHistoryManager.trackListHistory.isNotEmpty()
             ) {
-                currentUIState = UIState.HISTORY_RESULTS
-                updateUIState()
+                updateUIState(UIState.HISTORY_RESULTS)
             }
         }
 
@@ -121,8 +123,7 @@ class SearchActivity : AppCompatActivity() {
             clearEditTextBTN.updateVisibilityImage("")
             trackList = emptyList()
             tracksAdapter.updateTracks(emptyList())
-            currentUIState = UIState.INITIAL
-            updateUIState()
+            updateUIState(UIState.INITIAL)
             hideKeyboard()
             handler.removeCallbacks(searchRunnable)
         }
@@ -178,10 +179,10 @@ class SearchActivity : AppCompatActivity() {
         removeAllHistoryBTN.setOnClickListener {
             searchHistoryManager.clearTrackHistory()
             tracksHistoryAdapter.updateTracks(emptyList())
-            currentUIState = UIState.INITIAL
-            updateUIState()
+            updateUIState(UIState.INITIAL)
         }
-        updateUIState()
+
+        updateUIState(currentUIState)
     }
 
     override fun onPause() {
@@ -192,22 +193,26 @@ class SearchActivity : AppCompatActivity() {
 
     private fun performSearch() {
         val query = searchText?.cleanText() ?: return
-        currentUIState = UIState.LOADING_SEARCH_RESULTS
-        updateUIState()
+        updateUIState(UIState.LOADING_SEARCH_RESULTS)
 
-        trackApiService.getTracks(query).enqueue(object : Callback<TrackApiResponse> {
+        currentCall?.cancel()
+        currentCall = trackApiService.getTracks(query)
+        currentCall?.enqueue(object : Callback<TrackApiResponse> {
             override fun onResponse(
                 call: Call<TrackApiResponse>,
                 response: Response<TrackApiResponse>
             ) {
+                val activity: SearchActivity? = weakRef.get()
+                if (activity == null || activity.isFinishing || activity.isDestroyed) {
+                    return
+                }
+
                 if (response.isSuccessful) {
-                    currentUIState = UIState.INITIAL
-                    updateUIState()
-                    trackList = response.body()?.tracksList ?: emptyList()
-                    tracksAdapter.updateTracks(trackList)
+                    activity.trackList = response.body()?.tracksList ?: emptyList()
+                    activity.tracksAdapter.updateTracks(activity.trackList)
 
                     if (BuildConfig.DEBUG) {
-                        val emptyFieldsCount = trackList.sumOf { track ->
+                        val emptyFieldsCount = activity.trackList.sumOf { track ->
                             track.javaClass.declaredFields.count { field ->
                                 field.isAccessible = true
                                 val value = field.get(track)
@@ -219,26 +224,26 @@ class SearchActivity : AppCompatActivity() {
                         Log.d("SearchActivity", "Количество пустых полей : $emptyFieldsCount")
                     }
 
-                    if (trackList.isEmpty()) {
-                        currentUIState = UIState.EMPTY
-                        updateUIState()
+                    if (activity.trackList.isEmpty()) {
+                        activity.updateUIState(UIState.EMPTY)
                     } else {
-                        currentUIState = UIState.RESULTS
-                        updateUIState()
+                        activity.updateUIState(UIState.RESULTS)
                     }
                 } else {
-                    currentUIState = UIState.ERROR
-                    updateUIState()
-                    trackList = emptyList()
-                    tracksAdapter.updateTracks(trackList)
+                    activity.updateUIState(UIState.ERROR)
+                    activity.trackList = emptyList()
+                    activity.tracksAdapter.updateTracks(trackList)
                 }
             }
 
             override fun onFailure(call: Call<TrackApiResponse>, t: Throwable) {
-                currentUIState = UIState.ERROR
-                updateUIState()
-                trackList = emptyList()
-                tracksAdapter.updateTracks(emptyList())
+                val activity = weakRef.get()
+                if (activity == null || activity.isFinishing || activity.isDestroyed) {
+                    return
+                }
+                activity.updateUIState(UIState.ERROR)
+                activity.trackList = emptyList()
+                activity.tracksAdapter.updateTracks(emptyList())
             }
         })
     }
@@ -258,17 +263,16 @@ class SearchActivity : AppCompatActivity() {
                 handler.removeCallbacks(searchRunnable)
 
                 if (searchText.isNullOrEmpty()) {
-                    if (searchEditText.hasFocus() && searchHistoryManager.trackListHistory.isNotEmpty()) {
-                        currentUIState = UIState.HISTORY_RESULTS
-                    } else {
-                        currentUIState = UIState.INITIAL
-                    }
-                    updateUIState()
+                    updateUIState(
+                        if (searchEditText.hasFocus() && searchHistoryManager.trackListHistory.isNotEmpty())
+                            UIState.HISTORY_RESULTS
+                        else
+                            UIState.INITIAL
+                    )
                     trackList = emptyList()
                     tracksAdapter.updateTracks(emptyList())
                 } else {
-                    currentUIState = UIState.INITIAL
-                    updateUIState()
+                    updateUIState(UIState.INITIAL)
                     if (searchText!!.length > 2) {
                         searchDebounce()
                     }
@@ -278,6 +282,10 @@ class SearchActivity : AppCompatActivity() {
     }
 
     private val searchRunnable = Runnable {
+        val activity = weakRef.get()
+        if (activity == null || activity.isFinishing || activity.isDestroyed) {
+            return@Runnable
+        }
         performSearch()
     }
 
@@ -325,7 +333,7 @@ class SearchActivity : AppCompatActivity() {
         } catch (e: IllegalArgumentException) {
             UIState.INITIAL
         }
-        updateUIState()
+        updateUIState(currentUIState)
     }
 
     private fun hideKeyboard() {
@@ -349,15 +357,24 @@ class SearchActivity : AppCompatActivity() {
         progressCircularPB = findViewById(R.id.progress_circular)
     }
 
-    private fun updateUIState() {
+    private fun updateUIState(state: UIState) {
+        if (currentUIState == state) {
+            searchEditText.post {
+                if (!searchEditText.hasFocus()) {
+                    searchEditText.requestFocus()
+                }
+            }
+            return
+        }
+        currentUIState = state
+
         trackListRecyclerView.visibility = View.GONE
         emptySearchFrame.visibility = View.GONE
         errorConnectionFrame.visibility = View.GONE
         historySearchFrame.visibility = View.GONE
         progressCircularPB.visibility = View.GONE
 
-
-        when (currentUIState) {
+        when (state) {
             UIState.ERROR -> {
                 errorConnectionFrame.visibility = View.VISIBLE
             }
@@ -371,13 +388,12 @@ class SearchActivity : AppCompatActivity() {
             }
 
             UIState.INITIAL -> {
-                searchEditText.postDelayed({
-                    searchEditText.requestFocus()
-                }, 1000)
+                searchEditText.post{ searchEditText.requestFocus() }
             }
 
             UIState.HISTORY_RESULTS -> {
                 historySearchFrame.visibility = View.VISIBLE
+                searchEditText.requestFocus()
                 tracksHistoryAdapter.updateTracks(searchHistoryManager.trackListHistory)
             }
 
@@ -385,6 +401,15 @@ class SearchActivity : AppCompatActivity() {
                 progressCircularPB.visibility = View.VISIBLE
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        handler.removeCallbacksAndMessages(null)
+        currentCall?.cancel()
+        currentCall = null
+
+        searchHistoryManager.saveTrackHistory()
     }
 
 
