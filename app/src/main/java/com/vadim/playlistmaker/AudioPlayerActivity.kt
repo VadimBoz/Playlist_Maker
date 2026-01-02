@@ -1,7 +1,9 @@
 package com.vadim.playlistmaker
 
+import android.media.MediaPlayer
 import android.os.Bundle
-import android.os.PersistableBundle
+import android.os.Handler
+import android.os.Looper
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
@@ -14,6 +16,13 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.google.android.material.appbar.MaterialToolbar
+import java.lang.ref.WeakReference
+
+
+
+
+const val TIMER_UPDATE_DELAY_MS = 300L    // Задержка обновления таймера
+const val TRACK_DURATION_MS = 30000L      // Длительность трека
 
 class AudioPlayerActivity : AppCompatActivity() {
 
@@ -34,10 +43,25 @@ class AudioPlayerActivity : AppCompatActivity() {
     private lateinit var playBTN: ImageButton
     private lateinit var addToPlayListBTN: ImageButton
     private lateinit var addToFavoriteBTN: ImageButton
-    private  var isPlaying: Boolean = false
-    private var isFavorite: Boolean = false
-    private var isAddedToPlayList: Boolean = false
+    private lateinit var mediaPlayer: MediaPlayer
+    private lateinit var playerState: PlayerState
+    private lateinit var mainThreadHandler: Handler
+    private lateinit var timerTV: TextView
 
+    private lateinit var activityWeakRef: WeakReference<AudioPlayerActivity>
+    private var isFavorite = false
+    private var isAddedToPlayList = false
+    private var currentTimerRunnable: Runnable? = null
+    private var savedPosition: Int = 0
+    private var wasPlayingBeforePause: Boolean = false
+    private val KEY_WAS_PLAYING_BEFORE_PAUSE = "was_playing_before_pause"
+    private val KEY_TRACK = "track"
+    private val KEY_IS_FAVORITE = "is_favorite"
+    private val KEY_IS_ADDED = "is_added"
+    private val KEY_CURRENT_POSITION = "current_position"
+    private val KEY_PLAYER_STATE = "player_state"
+
+    private enum class PlayerState { PLAYING, PAUSED, PREPARED, DEFAULT }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,19 +82,28 @@ class AudioPlayerActivity : AppCompatActivity() {
         countryTV = findViewById(R.id.tv_country_value)
         durationTV = findViewById(R.id.tv_duration_value)
         albumCover = findViewById(R.id.album_cover)
-
         albumGroup = findViewById(R.id.album_group)
         yearGroup = findViewById(R.id.year_group)
         genreGroup = findViewById(R.id.genre_group)
         countryGroup = findViewById(R.id.country_group)
-
-        toolbar.setNavigationOnClickListener { finish() }
-
         playBTN = findViewById(R.id.btn_play)
         addToPlayListBTN = findViewById(R.id.btn_add)
         addToFavoriteBTN = findViewById(R.id.btn_favorite)
+        timerTV = findViewById(R.id.tv_timer)
 
-        track = intent.getParcelableExtra<Track>("track")
+        activityWeakRef = WeakReference(this)
+
+        track = intent.getParcelableExtra("track")
+
+        toolbar.setNavigationOnClickListener { finish() }
+        mediaPlayer = MediaPlayer()
+        playerState = PlayerState.DEFAULT
+        playBTN.isEnabled = false
+        mainThreadHandler = Handler(Looper.getMainLooper())
+
+        preparePlayer()
+
+
         track.let { track ->
             trackNameTV.text = track?.trackName
             artistNameTV.text = track?.artistName
@@ -97,15 +130,8 @@ class AudioPlayerActivity : AppCompatActivity() {
 
         }
 
-        Glide.with(this)
-            .load(track?.artworkUrl100?.artWorkToFullSize())
-            .transform(
-                CenterCrop(),
-                RoundedCorners(this.resources.getDimensionPixelSize(R.dimen.corner_radius_art_work))
-            )
-            .placeholder(R.drawable.placeholder)
-            .into(albumCover)
-
+        updateButtonsState()
+        loadCoverAlbum()
 
         addToFavoriteBTN.setOnClickListener {
             if (!isFavorite) {
@@ -128,24 +154,181 @@ class AudioPlayerActivity : AppCompatActivity() {
         }
 
         playBTN.setOnClickListener {
-            if(!isPlaying) {
-                playBTN.setImageResource(R.drawable.ico_button_pause)
-                isPlaying = true
+            playbackControl()
+        }
+    }
+
+    private fun loadCoverAlbum() {
+        Glide.with(this)
+            .load(track?.artworkUrl100?.artWorkToFullSize())
+            .transform(
+                CenterCrop(),
+                RoundedCorners(this.resources.getDimensionPixelSize(R.dimen.corner_radius_art_work))
+            )
+            .placeholder(R.drawable.placeholder)
+            .into(albumCover)
+    }
+
+    private fun updateButtonsState() {
+        val favoriteIcon = if (isFavorite) R.drawable.ico_button_favorite_active
+        else R.drawable.ico_button_favorite_inactive
+        addToFavoriteBTN.setImageResource(favoriteIcon)
+
+        val addIcon = if (isAddedToPlayList) R.drawable.ico_button_added
+        else R.drawable.ico_button_add
+        addToPlayListBTN.setImageResource(addIcon)
+
+        val playIcon = if (playerState == PlayerState.PLAYING)
+            R.drawable.ico_button_pause
+        else R.drawable.ico_button_play
+        playBTN.setImageResource(playIcon)
+    }
+
+    private fun startPlayTrack() {
+        mediaPlayer.start()
+        playBTN.setImageResource(R.drawable.ico_button_pause)
+        playerState = PlayerState.PLAYING
+        startTimer()
+    }
+
+    private fun pausePlayTrack() {
+        mediaPlayer.pause()
+        playBTN.setImageResource(R.drawable.ico_button_play)
+        playerState = PlayerState.PAUSED
+        startTimer()
+    }
+
+    private fun stopPlayTrack() {
+        mediaPlayer.stop()
+        playBTN.setImageResource(R.drawable.ico_button_play)
+        playerState = PlayerState.PAUSED
+    }
+
+    private fun preparePlayer() {
+        mediaPlayer.setDataSource(track?.previewUrl)
+        mediaPlayer.prepareAsync()
+
+        mediaPlayer.setOnPreparedListener {
+            playBTN.isEnabled = true
+            playerState = PlayerState.PREPARED
+            if (savedPosition > 0) {
+                mediaPlayer.seekTo(savedPosition)
+                timerTV.text = savedPosition.toString().epochTimeToTxt()
             }
-            else {
-                playBTN.setImageResource(R.drawable.ico_button_play)
-                isPlaying = false
+
+            if (wasPlayingBeforePause) {
+                mainThreadHandler.post {
+                    if (!isFinishing && !isDestroyed) {
+                        startPlayTrack()
+                    }
+                }
+            }
+        }
+
+        mediaPlayer.setOnCompletionListener {
+            playBTN.setImageResource(R.drawable.ico_button_play)
+            playerState = PlayerState.PREPARED
+        }
+
+    }
+
+    private fun playbackControl() {
+        when (playerState) {
+            PlayerState.PLAYING -> {
+                pausePlayTrack()
+                playerState = PlayerState.PAUSED
+                wasPlayingBeforePause = false
+            }
+
+            PlayerState.PREPARED, PlayerState.PAUSED -> {
+                startPlayTrack()
+                playerState = PlayerState.PLAYING
+                wasPlayingBeforePause = true
+                startTimer()
+            }
+
+            else -> {}
+        }
+    }
+
+    private fun createTimerRunnable(): Runnable {
+        return object : Runnable {
+            override fun run() {
+                val activity = activityWeakRef.get()
+                if (activity == null || activity.isFinishing || activity.isDestroyed) {
+                    stopTimer()
+                    return
+                }
+
+                if (!activity::mediaPlayer.isInitialized) {
+                    stopTimer()
+                    return
+                }
+
+                if (mediaPlayer.isPlaying) {
+                    val curTime = mediaPlayer.currentPosition
+                    if (curTime < TRACK_DURATION_MS - TIMER_UPDATE_DELAY_MS) {
+                        timerTV.text = curTime.toString().epochTimeToTxt()
+                        mainThreadHandler.postDelayed(this, TIMER_UPDATE_DELAY_MS)
+                    } else {
+                        timerTV.text = getString(R.string.zero_duration)
+                        stopTimer()
+                    }
+
+                }
             }
         }
     }
 
-    override fun onSaveInstanceState(outState: Bundle, outPersistentState: PersistableBundle) {
-        super.onSaveInstanceState(outState, outPersistentState)
-        outState.putParcelable("track", track)
+    private fun startTimer() {
+        currentTimerRunnable = createTimerRunnable()
+        currentTimerRunnable?.let {
+            mainThreadHandler.post(it)
+        }
+    }
+
+    private fun stopTimer() {
+        currentTimerRunnable?.let {
+            mainThreadHandler.removeCallbacks(it)
+        }
+        currentTimerRunnable = null
+    }
+
+    override fun onPause() {
+        super.onPause()
+        pausePlayTrack()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        stopTimer()
+        mediaPlayer.release()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putParcelable(KEY_TRACK, track)
+        outState.putBoolean(KEY_IS_FAVORITE, isFavorite)
+        outState.putBoolean(KEY_IS_ADDED, isAddedToPlayList)
+        outState.putInt(KEY_CURRENT_POSITION, mediaPlayer.currentPosition)
+        outState.putString(KEY_PLAYER_STATE, playerState.name)
+        outState.putBoolean(KEY_WAS_PLAYING_BEFORE_PAUSE, wasPlayingBeforePause)
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
-        track = savedInstanceState.getParcelable("track")
+        track = savedInstanceState.getParcelable(KEY_TRACK)
+        isFavorite = savedInstanceState.getBoolean(KEY_IS_FAVORITE, false)
+        isAddedToPlayList = savedInstanceState.getBoolean(KEY_IS_ADDED, false)
+
+        savedPosition = savedInstanceState.getInt(KEY_CURRENT_POSITION, 0)
+        val savedStateName = savedInstanceState.getString(KEY_PLAYER_STATE)
+        wasPlayingBeforePause = savedInstanceState.getBoolean(KEY_WAS_PLAYING_BEFORE_PAUSE, false)
+        playerState = try {
+            PlayerState.valueOf(savedStateName ?: PlayerState.DEFAULT.name)
+        } catch (e: IllegalArgumentException) {
+            PlayerState.DEFAULT
+        }
     }
+
 }

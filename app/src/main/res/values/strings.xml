@@ -30,4 +30,5 @@
     <string name="album">Альбом</string>
     <string name="genre">Жанр</string>
     <string name="country">Страна</string>
+    <string name="zero_duration">00:00</string>
 </resources>

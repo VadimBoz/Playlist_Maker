@@ -24,7 +24,8 @@ class TrackDeserializerAdapter: JsonDeserializer<Track> {
             album = jsonObject.getSafe("collectionName")?.asString?.cleanText() ?: "",
             year = jsonObject.getSafe("releaseDate")?.asString?.cleanText()?.parseToYear() ?: 0,
             genre = jsonObject.getSafe("primaryGenreName")?.asString?.cleanText() ?: "",
-            country = jsonObject.getSafe("country")?.asString?.cleanText() ?: ""
+            country = jsonObject.getSafe("country")?.asString?.cleanText() ?: "",
+            previewUrl = jsonObject.getSafe("previewUrl")?.asString?.cleanText() ?: ""
         )
     }
 

@@ -2,6 +2,8 @@ package com.vadim.playlistmaker
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
@@ -18,16 +20,20 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.google.gson.GsonBuilder
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.lang.ref.WeakReference
 import kotlin.math.abs
 
 class SearchActivity : AppCompatActivity() {
 
+    private val SEARCH_DEBOUNCE_DELAY = 2000L
+    private val CLICK_DEBOUNCE_DELAY = 1000L
     private lateinit var searchEditText: EditText
     private val KEY_SEARCH_TEXT = "search_text"
     private var KEY_CURRENT_STATE = "current_UI_state"
@@ -47,15 +53,20 @@ class SearchActivity : AppCompatActivity() {
     private lateinit var historySearchFrame: View
     private lateinit var removeAllHistoryBTN: MaterialButton
     private lateinit var searchHistoryManager: SearchHistoryManager
-
+    private lateinit var progressCircularPB: CircularProgressIndicator
+    private lateinit var weakRef: WeakReference<SearchActivity>
+    private var currentCall: Call<TrackApiResponse>? = null
     private var currentUIState: UIState = UIState.INITIAL
+
+    private var isClickAllowed = true
+    private val handler = Handler(Looper.getMainLooper())
 
     companion object {
         private var searchText: String? = null
     }
 
     private enum class UIState {
-        INITIAL, RESULTS, EMPTY, ERROR, HISTORY_RESULTS
+    INITIAL, RESULTS, EMPTY, ERROR, HISTORY_RESULTS, LOADING_SEARCH_RESULTS
     }
 
 
@@ -72,6 +83,7 @@ class SearchActivity : AppCompatActivity() {
 
         searchHistoryManager = SearchHistoryManager(this)
         searchHistoryManager.loadTrackHistoryFromPref()
+        weakRef = WeakReference(this)
 
         initViews()
 
@@ -101,8 +113,7 @@ class SearchActivity : AppCompatActivity() {
                 && searchEditText.text.isNullOrEmpty()
                 && searchHistoryManager.trackListHistory.isNotEmpty()
             ) {
-                currentUIState = UIState.HISTORY_RESULTS
-                updateUIState()
+                updateUIState(UIState.HISTORY_RESULTS)
             }
         }
 
@@ -112,16 +123,18 @@ class SearchActivity : AppCompatActivity() {
             clearEditTextBTN.updateVisibilityImage("")
             trackList = emptyList()
             tracksAdapter.updateTracks(emptyList())
-            currentUIState = UIState.INITIAL
-            updateUIState()
+            updateUIState(UIState.INITIAL)
             hideKeyboard()
+            handler.removeCallbacks(searchRunnable)
         }
 
         reloadBTN.setOnClickListener {
-            performSearch()
+            handler.removeCallbacks(searchRunnable)
+            searchRunnable.run()
         }
 
         tracksAdapter = TracksAdapter(trackList) { track ->
+            if (!clickDebounce()) return@TracksAdapter
             searchHistoryManager.addTrackToHistory(track)
             Toast.makeText(
                 this,
@@ -146,6 +159,7 @@ class SearchActivity : AppCompatActivity() {
         )
 
         tracksHistoryAdapter = TracksAdapter(searchHistoryManager.trackListHistory) { track ->
+            if (!clickDebounce()) return@TracksAdapter
             val intent = Intent(this, AudioPlayerActivity::class.java)
             intent.putExtra("track", track)
             startActivity(intent)
@@ -154,7 +168,8 @@ class SearchActivity : AppCompatActivity() {
 
         searchEditText.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
-                performSearch()
+                handler.removeCallbacks(searchRunnable)
+                searchRunnable.run()
                 hideKeyboard()
                 true
 
@@ -164,31 +179,40 @@ class SearchActivity : AppCompatActivity() {
         removeAllHistoryBTN.setOnClickListener {
             searchHistoryManager.clearTrackHistory()
             tracksHistoryAdapter.updateTracks(emptyList())
-            currentUIState = UIState.INITIAL
-            updateUIState()
+            updateUIState(UIState.INITIAL)
         }
-        updateUIState()
+
+        updateUIState(currentUIState)
     }
 
     override fun onPause() {
         super.onPause()
+        handler.removeCallbacks(searchRunnable)
         searchHistoryManager.saveTrackHistory()
     }
 
     private fun performSearch() {
         val query = searchText?.cleanText() ?: return
+        updateUIState(UIState.LOADING_SEARCH_RESULTS)
 
-        trackApiService.getTracks(query).enqueue(object : Callback<TrackApiResponse> {
+        currentCall?.cancel()
+        currentCall = trackApiService.getTracks(query)
+        currentCall?.enqueue(object : Callback<TrackApiResponse> {
             override fun onResponse(
                 call: Call<TrackApiResponse>,
                 response: Response<TrackApiResponse>
             ) {
+                val activity: SearchActivity? = weakRef.get()
+                if (activity == null || activity.isFinishing || activity.isDestroyed) {
+                    return
+                }
+
                 if (response.isSuccessful) {
-                    trackList = response.body()?.tracksList ?: emptyList()
-                    tracksAdapter.updateTracks(trackList)
+                    activity.trackList = response.body()?.tracksList ?: emptyList()
+                    activity.tracksAdapter.updateTracks(activity.trackList)
 
                     if (BuildConfig.DEBUG) {
-                        val emptyFieldsCount = trackList.sumOf { track ->
+                        val emptyFieldsCount = activity.trackList.sumOf { track ->
                             track.javaClass.declaredFields.count { field ->
                                 field.isAccessible = true
                                 val value = field.get(track)
@@ -200,26 +224,26 @@ class SearchActivity : AppCompatActivity() {
                         Log.d("SearchActivity", "Количество пустых полей : $emptyFieldsCount")
                     }
 
-                    if (trackList.isEmpty()) {
-                        currentUIState = UIState.EMPTY
-                        updateUIState()
+                    if (activity.trackList.isEmpty()) {
+                        activity.updateUIState(UIState.EMPTY)
                     } else {
-                        currentUIState = UIState.RESULTS
-                        updateUIState()
+                        activity.updateUIState(UIState.RESULTS)
                     }
                 } else {
-                    currentUIState = UIState.ERROR
-                    updateUIState()
-                    trackList = emptyList()
-                    tracksAdapter.updateTracks(trackList)
+                    activity.updateUIState(UIState.ERROR)
+                    activity.trackList = emptyList()
+                    activity.tracksAdapter.updateTracks(trackList)
                 }
             }
 
             override fun onFailure(call: Call<TrackApiResponse>, t: Throwable) {
-                currentUIState = UIState.ERROR
-                updateUIState()
-                trackList = emptyList()
-                tracksAdapter.updateTracks(emptyList())
+                val activity = weakRef.get()
+                if (activity == null || activity.isFinishing || activity.isDestroyed) {
+                    return
+                }
+                activity.updateUIState(UIState.ERROR)
+                activity.trackList = emptyList()
+                activity.tracksAdapter.updateTracks(emptyList())
             }
         })
     }
@@ -230,23 +254,55 @@ class SearchActivity : AppCompatActivity() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                if (searchEditText.hasFocus()
-                    && s.isNullOrEmpty()
-                    && searchHistoryManager.trackListHistory.isNotEmpty()
-                ) {
-                    currentUIState = UIState.HISTORY_RESULTS
-                    updateUIState()
-                } else {
-                    currentUIState = UIState.INITIAL
-                    updateUIState()
-                }
+                handler.removeCallbacks(searchRunnable)
             }
 
             override fun afterTextChanged(s: Editable?) {
                 searchText = s.toString()
                 clearEditTextBTN.updateVisibilityImage(searchText)
+                handler.removeCallbacks(searchRunnable)
+
+                if (searchText.isNullOrEmpty()) {
+                    updateUIState(
+                        if (searchEditText.hasFocus() && searchHistoryManager.trackListHistory.isNotEmpty())
+                            UIState.HISTORY_RESULTS
+                        else
+                            UIState.INITIAL
+                    )
+                    trackList = emptyList()
+                    tracksAdapter.updateTracks(emptyList())
+                } else {
+                    updateUIState(UIState.INITIAL)
+                    if (searchText!!.length > 2) {
+                        searchDebounce()
+                    }
+                }
             }
         }
+    }
+
+    private val searchRunnable = Runnable {
+        val activity = weakRef.get()
+        if (activity == null || activity.isFinishing || activity.isDestroyed) {
+            return@Runnable
+        }
+        performSearch()
+    }
+
+    private fun searchDebounce() {
+        handler.removeCallbacks(searchRunnable)
+        if (!searchText.isNullOrEmpty() && searchText!!.length > 2) {
+            handler.postDelayed(searchRunnable, SEARCH_DEBOUNCE_DELAY)
+        }
+    }
+
+    private fun clickDebounce() : Boolean {
+        val current = isClickAllowed
+        if (isClickAllowed) {
+            isClickAllowed = false
+            handler.postDelayed({ isClickAllowed = true }, CLICK_DEBOUNCE_DELAY)
+        }
+        return current
     }
 
     private fun ImageView.updateVisibilityImage(text: CharSequence?) {
@@ -277,7 +333,7 @@ class SearchActivity : AppCompatActivity() {
         } catch (e: IllegalArgumentException) {
             UIState.INITIAL
         }
-        updateUIState()
+        updateUIState(currentUIState)
     }
 
     private fun hideKeyboard() {
@@ -298,15 +354,27 @@ class SearchActivity : AppCompatActivity() {
         removeAllHistoryBTN = findViewById(R.id.remove_history_BTN)
         trackListHistoryRecyclerView = findViewById(R.id.savedTracks_RV)
         toolBarBTN = findViewById<MaterialToolbar>(R.id.toolBarBack_BTN)
+        progressCircularPB = findViewById(R.id.progress_circular)
     }
 
-    private fun updateUIState() {
+    private fun updateUIState(state: UIState) {
+        if (currentUIState == state) {
+            searchEditText.post {
+                if (!searchEditText.hasFocus()) {
+                    searchEditText.requestFocus()
+                }
+            }
+            return
+        }
+        currentUIState = state
+
         trackListRecyclerView.visibility = View.GONE
         emptySearchFrame.visibility = View.GONE
         errorConnectionFrame.visibility = View.GONE
         historySearchFrame.visibility = View.GONE
+        progressCircularPB.visibility = View.GONE
 
-        when (currentUIState) {
+        when (state) {
             UIState.ERROR -> {
                 errorConnectionFrame.visibility = View.VISIBLE
             }
@@ -320,16 +388,28 @@ class SearchActivity : AppCompatActivity() {
             }
 
             UIState.INITIAL -> {
-                searchEditText.postDelayed({
-                    searchEditText.requestFocus()
-                }, 1000)
+                searchEditText.post{ searchEditText.requestFocus() }
             }
 
             UIState.HISTORY_RESULTS -> {
                 historySearchFrame.visibility = View.VISIBLE
+                searchEditText.requestFocus()
                 tracksHistoryAdapter.updateTracks(searchHistoryManager.trackListHistory)
             }
+
+            UIState.LOADING_SEARCH_RESULTS -> {
+                progressCircularPB.visibility = View.VISIBLE
+            }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        handler.removeCallbacksAndMessages(null)
+        currentCall?.cancel()
+        currentCall = null
+
+        searchHistoryManager.saveTrackHistory()
     }
 
 
