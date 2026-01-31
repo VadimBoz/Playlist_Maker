@@ -90,7 +90,6 @@ class SearchActivity : AppCompatActivity() {
         backgroundHandler = Handler(handlerThread.looper)
 
         app = application as App
-        app.themeUseCase.getAndApplyTheme()
 
         enableEdgeToEdge()
         setContentView(R.layout.activity_search)
@@ -240,7 +239,7 @@ class SearchActivity : AppCompatActivity() {
             updateUIState(UIState.LOADING_SEARCH_RESULTS)
         }
 
-        trackSearchUseCase.cancel()
+        trackSearchUseCase.cancelSearching()
 
         backgroundHandler.post {
             val result = trackSearchUseCase.search(query)
@@ -457,7 +456,7 @@ class SearchActivity : AppCompatActivity() {
         // Очищаем все операции
         backgroundHandler.removeCallbacksAndMessages(null)
         mainHandler.removeCallbacksAndMessages(null)
-        trackSearchUseCase.cancel()
+        trackSearchUseCase.cancelSearching()
         handlerThread.quitSafely()
     }
 }

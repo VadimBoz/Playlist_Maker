@@ -17,7 +17,7 @@ import com.vadim.playlistmaker.R
 import com.vadim.playlistmaker.domain.repository.ImageLoader
 import com.vadim.playlistmaker.domain.model.Track
 import com.vadim.playlistmaker.presentation.App
-import com.vadim.playlistmaker.data.extension.epochTimeToTxt
+import com.vadim.playlistmaker.data.extension.epochTimeToFormatedTxt
 import java.lang.ref.WeakReference
 
 
@@ -69,7 +69,6 @@ class AudioPlayerActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         val app = applicationContext as App
-        app.themeUseCase.getAndApplyTheme()
 
         enableEdgeToEdge()
         setContentView(R.layout.activity_audio_player)
@@ -219,7 +218,7 @@ class AudioPlayerActivity : AppCompatActivity() {
             playerState = PlayerState.PREPARED
             if (savedPosition > 0) {
                 mediaPlayer.seekTo(savedPosition)
-                timerTV.text = savedPosition.toString().epochTimeToTxt()
+                timerTV.text = savedPosition.toString().epochTimeToFormatedTxt()
             }
 
             if (wasPlayingBeforePause) {
@@ -274,7 +273,7 @@ class AudioPlayerActivity : AppCompatActivity() {
                 if (mediaPlayer.isPlaying) {
                     val curTime = mediaPlayer.currentPosition
                     if (curTime < TRACK_DURATION_MS - TIMER_UPDATE_DELAY_MS) {
-                        timerTV.text = curTime.toString().epochTimeToTxt()
+                        timerTV.text = curTime.toString().epochTimeToFormatedTxt()
                         mainThreadHandler.postDelayed(this, TIMER_UPDATE_DELAY_MS)
                     } else {
                         timerTV.text = getString(R.string.zero_duration)

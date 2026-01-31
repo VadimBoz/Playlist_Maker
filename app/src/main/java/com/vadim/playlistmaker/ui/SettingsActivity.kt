@@ -20,7 +20,6 @@ class SettingsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         val app = application as App
-        app.themeUseCase.getAndApplyTheme()
 
         enableEdgeToEdge()
         setContentView(R.layout.activity_settings)

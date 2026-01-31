@@ -9,17 +9,12 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.vadim.playlistmaker.ui.MediaActivity
 import com.vadim.playlistmaker.R
 import com.vadim.playlistmaker.presentation.App
-import com.vadim.playlistmaker.ui.SearchActivity
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        val app = applicationContext as App
-        app.themeUseCase.getAndApplyTheme()
 
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)

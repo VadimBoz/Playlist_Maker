@@ -14,9 +14,6 @@ class MediaActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val app = application as App
-        app.themeUseCase.getAndApplyTheme()
-
         enableEdgeToEdge()
         setContentView(R.layout.activity_media)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->

@@ -3,7 +3,6 @@ package com.vadim.playlistmaker.presentation
 import android.app.Application
 import android.os.Handler
 import android.os.Looper
-import androidx.appcompat.app.AppCompatDelegate
 import com.vadim.playlistmaker.Creator
 import com.vadim.playlistmaker.domain.useCase.ThemeUseCase
 import com.vadim.playlistmaker.domain.useCase.TrackHistoryUseCase
@@ -17,19 +16,15 @@ class App : Application() {
     val trackSearchUseCase: TrackSearchUseCase by lazy { Creator.provideTrackSearchUseCase() }
     val trackHistoryUseCase: TrackHistoryUseCase by lazy { Creator.provideTrackHistoryUseCase(this) }
     val imageLoader: ImageLoader by lazy { Creator.provideImageLoader(this) }
-    private val mainHandler = Handler(Looper.getMainLooper())
-
+    var isNightTheme: Boolean = false
 
     override fun onCreate() {
         super.onCreate()
-        themeUseCase.getAndApplyTheme()
+
+        themeUseCase.getAndApplyTheme { theme ->
+            isNightTheme = theme
+        }
 
     }
 
-
-
-    override fun onTerminate() {
-        super.onTerminate()
-        mainHandler.removeCallbacksAndMessages(null)
-    }
 }

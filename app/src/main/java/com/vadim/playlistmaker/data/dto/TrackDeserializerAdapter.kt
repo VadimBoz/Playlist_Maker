@@ -5,7 +5,7 @@ import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.vadim.playlistmaker.data.extension.cleanText
-import com.vadim.playlistmaker.data.extension.epochTimeToTxt
+import com.vadim.playlistmaker.data.extension.epochTimeToFormatedTxt
 import com.vadim.playlistmaker.data.extension.parseToYear
 import java.lang.reflect.Type
 
@@ -22,8 +22,7 @@ class TrackDeserializerAdapter: JsonDeserializer<TrackDto> {
             trackId = jsonObject.getSafe("trackId")?.asString?.cleanText()?.toLongOrNull() ?: 0L,
             trackName = jsonObject.getSafe("trackName")?.asString?.cleanText() ?: "",
             artistName = jsonObject.getSafe("artistName")?.asString?.cleanText() ?: "",
-            trackDuration = jsonObject.getSafe("trackTimeMillis")?.asString?.cleanText()
-                ?.epochTimeToTxt() ?: "",
+            trackDuration = jsonObject.getSafe("trackTimeMillis")?.asString?.cleanText() ?: "0",
             artworkUrl100 = jsonObject.getSafe("artworkUrl100")?.asString?.cleanText() ?: "",
             album = jsonObject.getSafe("collectionName")?.asString?.cleanText() ?: "",
             year = jsonObject.getSafe("releaseDate")?.asString?.cleanText()?.parseToYear() ?: 0,
