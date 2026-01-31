@@ -1,5 +1,6 @@
-package com.vadim.playlistmaker
+package com.vadim.playlistmaker.data.network
 
+import com.vadim.playlistmaker.data.dto.TrackApiResponse
 import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Query

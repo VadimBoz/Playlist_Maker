@@ -1,21 +1,9 @@
-package com.vadim.playlistmaker
+package com.vadim.playlistmaker.data.extension
 
-import android.content.Context
-import android.util.TypedValue
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.time.format.DateTimeParseException
 import java.util.Locale
-import kotlin.math.roundToInt
-
-fun <T: Number> Context.dpToPx(dp: T): Int {
-    return TypedValue.applyDimension(
-        TypedValue.COMPLEX_UNIT_DIP,
-        dp.toFloat(),
-        this.resources.displayMetrics
-    ).roundToInt()
-}
 
 fun String.cleanText(): String {
     return this
@@ -28,8 +16,8 @@ fun String.cleanText(): String {
 
 fun String?.epochTimeToTxt(): String {
     return this?.let {
-            SimpleDateFormat("mm:ss", Locale.getDefault()).format(it.toLong())
-            } ?: ""
+        SimpleDateFormat("mm:ss", Locale.getDefault()).format(it.toLong())
+    } ?: ""
 }
 
 fun String.parseToYear(): Int {
@@ -40,5 +28,4 @@ fun String.parseToYear(): Int {
 
 fun String.artWorkToFullSize(): String {
     return this.replaceAfterLast('/',"512x512bb.jpg")
-
 }
