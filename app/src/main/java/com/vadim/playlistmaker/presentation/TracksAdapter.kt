@@ -1,13 +1,16 @@
-package com.vadim.playlistmaker
+package com.vadim.playlistmaker.presentation
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
+import com.vadim.playlistmaker.R
+import com.vadim.playlistmaker.domain.model.Track
+import com.vadim.playlistmaker.domain.repository.ImageLoader
 
 class TracksAdapter(private var tracks: List<Track>,
+                    private val imageLoader: ImageLoader,
                     private val onTrackItemClick: (Track) -> Unit
         ) : RecyclerView.Adapter<TrackViewHolder>() {
 
@@ -18,7 +21,7 @@ class TracksAdapter(private var tracks: List<Track>,
 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TrackViewHolder {
-        return TrackViewHolder(parent)
+        return TrackViewHolder(parent, imageLoader)
     }
 
     override fun onBindViewHolder(holder: TrackViewHolder, position: Int) {
@@ -34,7 +37,7 @@ class TracksAdapter(private var tracks: List<Track>,
     }
 }
 
-class TrackViewHolder(parent: ViewGroup)
+class TrackViewHolder(parent: ViewGroup, private val imageLoader: ImageLoader)
     : RecyclerView.ViewHolder(
         LayoutInflater.from(parent.context)
             .inflate(R.layout.item_track, parent, false)) {
@@ -49,9 +52,14 @@ class TrackViewHolder(parent: ViewGroup)
         artistNameTv.text = track.artistName
         trackTimeTv.text = track.trackDuration
 
-        Glide.with(itemView)
-            .load(track.artworkUrl100)
-            .placeholder(R.drawable.placeholder)
-            .into(artWorkIv)
+
+        artWorkIv.setImageResource(R.drawable.placeholder)
+
+        imageLoader.loadTrackImage(track) { imageData ->
+            imageData.imageBytes?.let { bytes ->
+                val bitmap = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                artWorkIv.setImageBitmap(bitmap)
+            }
+        }
     }
 }

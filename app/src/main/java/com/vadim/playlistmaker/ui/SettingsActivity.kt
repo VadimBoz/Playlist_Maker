@@ -1,9 +1,6 @@
-package com.vadim.playlistmaker
+package com.vadim.playlistmaker.ui
 
-import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
-import android.net.Uri
 import android.os.Bundle
 import android.widget.TextView
 import android.widget.Toast
@@ -11,13 +8,19 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.net.toUri
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.switchmaterial.SwitchMaterial
+import com.vadim.playlistmaker.R
+import com.vadim.playlistmaker.presentation.App
 
 class SettingsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val app = application as App
+
         enableEdgeToEdge()
         setContentView(R.layout.activity_settings)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
@@ -32,13 +35,18 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         val switchBTN = findViewById<SwitchMaterial>(R.id.switchTheme_SWITCH)
-
-        switchBTN.isChecked = (applicationContext as App).darkTheme
-        switchBTN.setOnCheckedChangeListener { switcher, checked ->
-            (applicationContext as App).switchTheme(checked)
-
+        app.themeUseCase.getTheme { isDarkTheme ->
+            switchBTN.isChecked = isDarkTheme
         }
 
+        switchBTN.setOnCheckedChangeListener { switcher, checked ->
+            app.themeUseCase.saveAndApplyTheme(checked) { success ->
+                if (!success) {
+                    Toast.makeText(this, "Не удалось сохранить тему", Toast.LENGTH_SHORT).show()
+                    switcher.isChecked = !checked
+                }
+            }
+        }
 
         val shareUpBTN = findViewById<TextView>(R.id.shareUp_BTN)
         shareUpBTN.setOnClickListener {
@@ -47,13 +55,12 @@ class SettingsActivity : AppCompatActivity() {
                 putExtra(Intent.EXTRA_TEXT, getString(R.string.course_android_developer))
             }
             startActivity(sendIntent)
-
         }
 
         val supportBTN = findViewById<TextView>(R.id.support_BTN)
         supportBTN.setOnClickListener {
             val sendIntent = Intent(Intent.ACTION_SENDTO).apply {
-                data = Uri.parse("mailto:")
+                data = "mailto:".toUri()
                 putExtra(Intent.EXTRA_EMAIL, arrayOf(getString(R.string.email)))
                 putExtra(Intent.EXTRA_SUBJECT, getString(R.string.subject_mail))
                 putExtra(Intent.EXTRA_TEXT, getString(R.string.text_mail))
@@ -70,7 +77,7 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         val userAgreementBTN = findViewById<TextView>(R.id.userAgreement_BTN)
-        val webpage = Uri.parse(getString(R.string.uri_user_agreement))
+        val webpage = getString(R.string.uri_user_agreement).toUri()
 
         userAgreementBTN.setOnClickListener {
             val intentUserAgreement = Intent(Intent.ACTION_VIEW, webpage)

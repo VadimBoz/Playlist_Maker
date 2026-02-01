@@ -1,4 +1,4 @@
-package com.vadim.playlistmaker
+package com.vadim.playlistmaker.ui
 
 import android.media.MediaPlayer
 import android.os.Bundle
@@ -12,13 +12,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.Group
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.bitmap.CenterCrop
-import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.google.android.material.appbar.MaterialToolbar
+import com.vadim.playlistmaker.R
+import com.vadim.playlistmaker.domain.repository.ImageLoader
+import com.vadim.playlistmaker.domain.model.Track
+import com.vadim.playlistmaker.presentation.App
+import com.vadim.playlistmaker.data.extension.epochTimeToFormatedTxt
 import java.lang.ref.WeakReference
-
-
 
 
 const val TIMER_UPDATE_DELAY_MS = 300L    // Задержка обновления таймера
@@ -61,10 +61,15 @@ class AudioPlayerActivity : AppCompatActivity() {
     private val KEY_CURRENT_POSITION = "current_position"
     private val KEY_PLAYER_STATE = "player_state"
 
+    private lateinit var imageLoader: ImageLoader
+
     private enum class PlayerState { PLAYING, PAUSED, PREPARED, DEFAULT }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val app = applicationContext as App
+
         enableEdgeToEdge()
         setContentView(R.layout.activity_audio_player)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
@@ -101,8 +106,9 @@ class AudioPlayerActivity : AppCompatActivity() {
         playBTN.isEnabled = false
         mainThreadHandler = Handler(Looper.getMainLooper())
 
-        preparePlayer()
+        imageLoader = app.imageLoader
 
+        preparePlayer()
 
         track.let { track ->
             trackNameTV.text = track?.trackName
@@ -131,7 +137,7 @@ class AudioPlayerActivity : AppCompatActivity() {
         }
 
         updateButtonsState()
-        loadCoverAlbum()
+        loadCoverAlbum(track)
 
         addToFavoriteBTN.setOnClickListener {
             if (!isFavorite) {
@@ -158,15 +164,14 @@ class AudioPlayerActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadCoverAlbum() {
-        Glide.with(this)
-            .load(track?.artworkUrl100?.artWorkToFullSize())
-            .transform(
-                CenterCrop(),
-                RoundedCorners(this.resources.getDimensionPixelSize(R.dimen.corner_radius_art_work))
-            )
-            .placeholder(R.drawable.placeholder)
-            .into(albumCover)
+    private fun loadCoverAlbum(track: Track?) {
+        if(track == null) return
+        imageLoader.loadTrackCoverImage(track) { imageData ->
+            imageData.imageBytes?.let { bytes ->
+                val bitmap = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                albumCover.setImageBitmap(bitmap)
+            }
+        }
     }
 
     private fun updateButtonsState() {
@@ -213,7 +218,7 @@ class AudioPlayerActivity : AppCompatActivity() {
             playerState = PlayerState.PREPARED
             if (savedPosition > 0) {
                 mediaPlayer.seekTo(savedPosition)
-                timerTV.text = savedPosition.toString().epochTimeToTxt()
+                timerTV.text = savedPosition.toString().epochTimeToFormatedTxt()
             }
 
             if (wasPlayingBeforePause) {
@@ -268,7 +273,7 @@ class AudioPlayerActivity : AppCompatActivity() {
                 if (mediaPlayer.isPlaying) {
                     val curTime = mediaPlayer.currentPosition
                     if (curTime < TRACK_DURATION_MS - TIMER_UPDATE_DELAY_MS) {
-                        timerTV.text = curTime.toString().epochTimeToTxt()
+                        timerTV.text = curTime.toString().epochTimeToFormatedTxt()
                         mainThreadHandler.postDelayed(this, TIMER_UPDATE_DELAY_MS)
                     } else {
                         timerTV.text = getString(R.string.zero_duration)

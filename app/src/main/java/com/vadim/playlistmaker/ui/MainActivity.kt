@@ -1,20 +1,21 @@
-package com.vadim.playlistmaker
+package com.vadim.playlistmaker.ui
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Button
-import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.vadim.playlistmaker.R
+import com.vadim.playlistmaker.presentation.App
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
@@ -22,7 +23,6 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-
 
         val settingsBTN = findViewById<Button>(R.id.settings_BTN)
         settingsBTN.setOnClickListener {
@@ -53,27 +53,22 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        Log.d("TAG", "Мы в методе onResume")
     }
 
 
     override fun onPause() {
         super.onPause()
-        Log.d("TAG", "Мы в методе onPause")
     }
 
     override fun onStop() {
         super.onStop()
-        Log.d("TAG", "Мы в методе onStop")
     }
 
     override fun onStart() {
         super.onStart()
-        Log.d("TAG", "Мы в методе onStart")
     }
     override fun onRestart() {
         super.onRestart()
-        Log.d("TAG", "Мы в методе onRestart")
     }
 
 }
